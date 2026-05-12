@@ -1,0 +1,2012 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mediswift — Intelligent Senior Healthcare Platform</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;800&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<style>
+/* ═══════════════════════════ DESIGN TOKENS ═══════════════════════════ */
+:root {
+  --g1:#0a5c52; --g2:#0d7a6e; --g3:#11a394; --g4:#15c5b3; --gpale:#e6f5f3;
+  --b1:#0b3d6b; --b2:#1460a8; --b3:#2e86de; --bpale:#e8f2fd;
+  --gold:#c8920a; --goldpale:#fdf3d8;
+  --red:#b92b2b; --redm:#dc3545; --redpale:#fdeaea;
+  --orange:#c96b0a; --orpale:#fef0e0;
+  --white:#fff; --bg:#f2f7f6; --bg2:#e8f0ee;
+  --card:#fff; --border:#d4e6e2;
+  --t1:#0a2520; --t2:#1f4039; --t3:#5a7870;
+  --sh1:0 2px 12px rgba(10,92,82,.09); --sh2:0 8px 32px rgba(10,92,82,.14); --sh3:0 20px 60px rgba(10,37,64,.2);
+  --r:12px; --rl:20px; --rxl:28px;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+html{scroll-behavior:smooth;}
+body{font-family:'Outfit',sans-serif;background:var(--bg);color:var(--t1);font-size:17px;overflow-x:hidden;}
+::-webkit-scrollbar{width:5px;}::-webkit-scrollbar-track{background:var(--bg);}::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px;}
+
+/* ═══ KEYFRAMES ═══ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes scaleIn{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:scale(1)}}
+@keyframes slideR{from{opacity:0;transform:translateX(-18px)}to{opacity:1;transform:none}}
+@keyframes heartbeat{0%,100%{transform:scale(1)}14%{transform:scale(1.18)}28%{transform:scale(1)}42%{transform:scale(1.1)}56%{transform:scale(1)}}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+@keyframes sosPulse{0%,100%{box-shadow:0 0 0 0 rgba(185,43,43,.6)}65%{box-shadow:0 0 0 20px rgba(185,43,43,0)}}
+@keyframes toastIn{from{opacity:0;transform:translateX(50px)}to{opacity:1;transform:none}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes shimmer{0%{background-position:-400px 0}100%{background-position:400px 0}}
+@keyframes alertPop{0%,100%{transform:translateY(0)}30%{transform:translateY(-6px)}60%{transform:translateY(-3px)}}
+@keyframes gradMove{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
+@keyframes micPulse{0%{box-shadow:0 0 0 0 rgba(21,197,179,0.7);transform:scale(1)}50%{box-shadow:0 0 0 15px rgba(21,197,179,0);transform:scale(1.08)}100%{box-shadow:0 0 0 0 rgba(21,197,179,0);transform:scale(1)}}
+@keyframes scanLaser{0%{top:0%;}100%{top:97%;}}
+
+/* ═══════════════════════════ AI OCR SCANNER ═══════════════════════════ */
+.rx-dropzone { border: 2px dashed var(--g3); background: linear-gradient(135deg, rgba(21,197,179,0.05), rgba(21,197,179,0.12)); border-radius: var(--rl); padding: 30px; text-align: center; cursor: pointer; transition: all 0.3s; margin-top: 15px; display:flex; flex-direction:column; align-items:center;}
+.rx-dropzone:hover { background: linear-gradient(135deg, rgba(21,197,179,0.1), rgba(21,197,179,0.22)); border-color: var(--g2); transform: translateY(-2px); }
+.rx-icon { font-size: 44px; margin-bottom: 8px; animation:float 3s ease-in-out infinite; }
+.rx-scan-area { position: relative; width: 100px; height: 120px; background: #fff; border-radius: 8px; border: 1px solid var(--border); margin: 0 auto; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }
+.rx-scan-area::before { content: '📄'; font-size: 60px; line-height: 120px; color: var(--t3); opacity: 0.3; }
+.rx-scan-laser { position: absolute; left: 0; right: 0; height: 3px; background: var(--g4); box-shadow: 0 0 10px var(--g4), 0 0 20px var(--g3); animation: scanLaser 1.5s linear infinite alternate; }
+.rx-progress-bar { width: 100%; max-width: 300px; height: 8px; background: var(--border); border-radius: 4px; margin: 15px auto 0; overflow: hidden; }
+.rx-progress-fill { height: 100%; background: linear-gradient(90deg, var(--g4), var(--g2)); width: 0%; transition: width 0.2s; }
+.rx-parsed-item { background: white; padding: 14px; border-radius: var(--r); margin-bottom: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; border: 1px solid var(--border); box-shadow: 0 2px 8px rgba(0,0,0,0.02); }
+.rx-parsed-item input, .rx-parsed-item select { width: 100%; padding: 10px 12px; border-radius: 8px; border: 1px solid var(--border); font-family: 'Outfit', sans-serif; font-size:15px; outline:none; transition:border 0.2s;}
+.rx-parsed-item input:focus, .rx-parsed-item select:focus { border-color: var(--g2); }
+.rx-parsed-header { font-size: 13px; font-weight: 700; color: var(--t3); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 4px; grid-column: span 2; display:flex; justify-content:space-between; align-items:center; }
+.rx-remove-btn { background:transparent; border:none; color:var(--red); cursor:pointer; font-size:16px; transition:transform 0.2s; }
+.rx-remove-btn:hover { transform:scale(1.2); }
+
+/* ═══════════════════════════ AUTH SCREENS ═══════════════════════════ */
+#authScreen {
+  min-height:100vh;display:flex;align-items:stretch;
+  background:linear-gradient(135deg,#0a2520 0%,#0a5c52 40%,#1460a8 100%);
+  background-size:200% 200%;animation:gradMove 8s ease infinite;
+  position:relative;overflow:hidden;
+}
+.auth-bg-orb{position:absolute;border-radius:50%;pointer-events:none;}
+.auth-bg-orb.o1{width:600px;height:600px;top:-200px;right:-150px;background:radial-gradient(circle,rgba(21,197,179,.18),transparent 70%);animation:float 7s ease-in-out infinite;}
+.auth-bg-orb.o2{width:400px;height:400px;bottom:-150px;left:-100px;background:radial-gradient(circle,rgba(46,134,222,.15),transparent 70%);animation:float 9s ease-in-out infinite reverse;}
+.auth-left {
+  flex:1;display:flex;flex-direction:column;justify-content:center;padding:60px;
+  color:white;max-width:540px;
+}
+.auth-logo{display:flex;align-items:center;gap:14px;margin-bottom:48px;}
+.auth-logo-icon{
+  width:56px;height:56px;border-radius:16px;
+  background:linear-gradient(135deg,var(--g4),var(--g3));
+  display:flex;align-items:center;justify-content:center;font-size:28px;
+  box-shadow:0 6px 24px rgba(21,197,179,.45);animation:heartbeat 3s ease-in-out infinite;
+}
+.auth-logo-name{font-family:'Playfair Display',serif;font-size:30px;font-weight:700;}
+.auth-logo-badge{font-size:11px;font-weight:700;letter-spacing:2px;background:linear-gradient(90deg,var(--gold),#f0c040);color:var(--b1);padding:2px 10px;border-radius:20px;margin-left:4px;}
+.auth-headline{font-family:'Playfair Display',serif;font-size:46px;font-weight:800;line-height:1.15;margin-bottom:20px;}
+.auth-sub{font-size:17px;opacity:.75;line-height:1.7;margin-bottom:36px;}
+.auth-features{display:flex;flex-direction:column;gap:14px;}
+.auth-feat{display:flex;align-items:center;gap:14px;background:rgba(255,255,255,.1);backdrop-filter:blur(8px);border:1px solid rgba(255,255,255,.15);padding:14px 18px;border-radius:var(--r);}
+.auth-feat-icon{font-size:26px;width:36px;text-align:center;}
+.auth-feat-text{font-size:15px;font-weight:500;opacity:.9;}
+.auth-right{
+  flex:0 0 480px;background:white;padding:48px 44px;
+  display:flex;flex-direction:column;justify-content:center;
+  box-shadow:-20px 0 80px rgba(0,0,0,.25);
+  max-height:100vh;overflow-y:auto;
+}
+.auth-panel{display:none;animation:fadeIn .35s ease;}
+.auth-panel.active{display:block;}
+.auth-panel-title{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--t1);margin-bottom:6px;}
+.auth-panel-sub{font-size:15px;color:var(--t3);margin-bottom:28px;}
+.f-row{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.f-grp{margin-bottom:16px;}
+.f-lbl{font-size:14px;font-weight:700;color:var(--t2);margin-bottom:6px;display:block;}
+.f-inp{
+  width:100%;padding:13px 16px;border-radius:var(--r);
+  border:2px solid var(--border);font-size:16px;
+  font-family:'Outfit',sans-serif;outline:none;transition:border .2s,box-shadow .2s;background:white;
+}
+.f-inp:focus{border-color:var(--g2);box-shadow:0 0 0 3px rgba(13,122,110,.12);}
+.f-sel{width:100%;padding:13px 16px;border-radius:var(--r);border:2px solid var(--border);font-size:16px;font-family:'Outfit',sans-serif;outline:none;background:white;cursor:pointer;}
+.btn{padding:12px 22px;border-radius:var(--r);border:none;cursor:pointer;font-size:16px;font-weight:700;font-family:'Outfit',sans-serif;display:inline-flex;align-items:center;gap:9px;transition:all .2s;letter-spacing:.2px;}
+.btn-primary{background:linear-gradient(135deg,var(--g1),var(--g3));color:white;box-shadow:0 4px 18px rgba(10,92,82,.3);}
+.btn-primary:hover{box-shadow:0 6px 28px rgba(10,92,82,.45);transform:translateY(-1px);}
+.btn-secondary{background:var(--gpale);color:var(--g2);border:2px solid var(--border);}
+.btn-secondary:hover{background:var(--gpale);border-color:var(--g2);}
+.btn-sky{background:linear-gradient(135deg,var(--b1),var(--b3));color:white;}
+.btn-sky:hover{transform:translateY(-1px);}
+.btn-danger{background:linear-gradient(135deg,var(--red),var(--redm));color:white;box-shadow:0 4px 16px rgba(185,43,43,.3);}
+.btn-danger:hover{box-shadow:0 6px 24px rgba(185,43,43,.5);transform:scale(1.02);}
+.btn-ghost{background:transparent;color:var(--g2);border:2px solid var(--border);}
+.btn-ghost:hover{border-color:var(--g2);background:var(--gpale);}
+.btn-block{width:100%;justify-content:center;}
+.btn-lg{padding:15px 28px;font-size:18px;border-radius:16px;}
+.btn-sm{padding:8px 14px;font-size:13px;border-radius:8px;}
+.auth-switch{margin-top:20px;text-align:center;font-size:15px;color:var(--t3);}
+.auth-switch a{color:var(--g2);font-weight:700;cursor:pointer;text-decoration:none;}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;color:var(--t3);font-size:13px;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.err-msg{background:var(--redpale);color:var(--red);border:1px solid #f5b8b8;border-radius:var(--r);padding:12px 16px;font-size:14px;font-weight:600;margin-bottom:16px;display:none;animation:fadeIn .3s ease;}
+.suc-msg{background:#e8f7ef;color:#1a7a44;border:1px solid #a8d8be;border-radius:var(--r);padding:12px 16px;font-size:14px;font-weight:600;margin-bottom:16px;display:none;animation:fadeIn .3s ease;}
+.step-indicator{display:flex;align-items:center;gap:8px;margin-bottom:24px;}
+.step-dot{width:10px;height:10px;border-radius:50%;background:var(--border);transition:background .3s;}
+.step-dot.done{background:var(--g2);}
+.step-dot.active{background:var(--g3);width:24px;border-radius:5px;}
+.field-hint{font-size:12px;color:var(--t3);margin-top:4px;}
+
+/* ═══════════════════════════ MAIN APP ═══════════════════════════ */
+#appScreen{display:none;min-height:100vh;}
+
+/* ─── HEADER ─── */
+.hdr{
+  position:sticky;top:0;z-index:300;height:66px;
+  background:linear-gradient(90deg,var(--b1) 0%,var(--g1) 60%,var(--g2) 100%);
+  display:flex;align-items:center;justify-content:space-between;padding:0 26px;
+  box-shadow:0 4px 28px rgba(10,37,64,.35);border-bottom:1px solid rgba(255,255,255,.08);
+}
+.hdr-brand{display:flex;align-items:center;gap:12px;cursor:pointer;}
+.hdr-logo{width:40px;height:40px;border-radius:11px;background:linear-gradient(135deg,var(--g4),var(--g3));display:flex;align-items:center;justify-content:center;font-size:20px;box-shadow:0 4px 14px rgba(21,197,179,.45);animation:heartbeat 3.5s ease-in-out infinite;}
+.hdr-name{font-family:'Playfair Display',serif;font-size:22px;color:white;font-weight:700;}
+.hdr-pro{font-size:10px;font-weight:800;letter-spacing:2px;background:linear-gradient(90deg,var(--gold),#f0c040);color:var(--b1);padding:2px 8px;border-radius:20px;margin-left:3px;}
+.hdr-center{display:flex;align-items:center;gap:16px;}
+.hdr-clock{font-size:19px;font-weight:800;color:white;background:rgba(255,255,255,.1);padding:5px 14px;border-radius:8px;letter-spacing:1px;border:1px solid rgba(255,255,255,.12);}
+.hdr-date{font-size:12px;color:rgba(255,255,255,.55);text-align:center;margin-top:2px;}
+.hdr-right{display:flex;align-items:center;gap:10px;}
+.hdr-ai-btn{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.18);color:white;padding:7px 14px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;transition:all .2s;}
+.hdr-ai-btn:hover{background:rgba(255,255,255,.2);}
+.hdr-ai-dot{width:8px;height:8px;border-radius:50%;background:#4ade80;animation:blink 1.5s infinite;}
+.hdr-user{display:flex;align-items:center;gap:10px;background:rgba(255,255,255,.12);border:1px solid rgba(255,255,255,.18);padding:6px 14px;border-radius:30px;cursor:pointer;transition:all .2s;}
+.hdr-user:hover{background:rgba(255,255,255,.2);}
+.hdr-av{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--g4),var(--b3));display:flex;align-items:center;justify-content:center;font-size:16px;font-weight:800;color:white;flex-shrink:0;}
+.hdr-uname{font-size:14px;font-weight:700;color:white;}
+.hdr-uid{font-size:11px;color:rgba(255,255,255,.55);}
+.hdr-logout{background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.2);color:white;padding:6px 12px;border-radius:8px;cursor:pointer;font-size:13px;font-weight:600;font-family:'Outfit',sans-serif;transition:all .2s;}
+.hdr-logout:hover{background:rgba(220,53,69,.4);}
+
+/* ─── LAYOUT ─── */
+.app-layout{display:flex;min-height:calc(100vh - 66px);}
+
+/* ─── SIDEBAR ─── */
+.sidebar{
+  width:248px;flex-shrink:0;background:white;
+  border-right:1px solid var(--border);
+  padding:18px 10px;position:sticky;top:66px;
+  height:calc(100vh - 66px);overflow-y:auto;
+  display:flex;flex-direction:column;
+  box-shadow:3px 0 18px rgba(0,0,0,.04);
+}
+.nav-sect{font-size:10px;font-weight:800;letter-spacing:2px;text-transform:uppercase;color:var(--t3);padding:14px 12px 5px;}
+.nav-item{
+  display:flex;align-items:center;gap:11px;padding:12px 14px;
+  border-radius:var(--r);cursor:pointer;transition:all .18s;
+  font-size:15px;font-weight:600;color:var(--t2);margin-bottom:2px;position:relative;
+}
+.nav-item:hover{background:var(--gpale);color:var(--g2);}
+.nav-item.active{background:var(--gpale);color:var(--g2);font-weight:700;}
+.nav-item.active::before{content:'';position:absolute;left:0;top:20%;bottom:20%;width:3px;background:var(--g2);border-radius:0 3px 3px 0;}
+.nav-ico{font-size:18px;width:24px;text-align:center;}
+.nav-bd{margin-left:auto;background:var(--redm);color:white;font-size:11px;font-weight:800;min-width:19px;height:19px;border-radius:10px;display:flex;align-items:center;justify-content:center;padding:0 4px;animation:alertPop 3s ease-in-out infinite;}
+.nav-bd.warn{background:var(--orange);}
+.nav-bd.info{background:var(--b2);}
+.sb-sos{margin-top:auto;padding-top:14px;border-top:1px solid var(--border);}
+.sos-sb-btn{width:100%;padding:13px;border-radius:var(--r);border:none;cursor:pointer;background:linear-gradient(135deg,var(--red),var(--redm));color:white;font-size:15px;font-weight:800;font-family:'Outfit',sans-serif;display:flex;align-items:center;justify-content:center;gap:9px;box-shadow:0 4px 18px rgba(185,43,43,.35);transition:all .2s;animation:sosPulse 2.5s ease-in-out infinite;}
+.sos-sb-btn:hover{transform:scale(1.03);box-shadow:0 6px 26px rgba(185,43,43,.55);}
+
+/* ─── MAIN ─── */
+.main{flex:1;padding:26px;overflow-y:auto;display:none;}
+.main.active{display:block;animation:fadeUp .35s ease;}
+.ph{margin-bottom:22px;}
+.ph h1{font-family:'Playfair Display',serif;font-size:28px;font-weight:700;color:var(--t1);}
+.ph p{font-size:16px;color:var(--t3);margin-top:3px;}
+.ph-row{display:flex;align-items:flex-start;justify-content:space-between;gap:14px;flex-wrap:wrap;}
+
+/* ─── CARDS ─── */
+.card{background:white;border-radius:var(--rl);padding:22px;box-shadow:var(--sh1);border:1px solid var(--border);transition:transform .2s,box-shadow .2s;}
+.card:hover{transform:translateY(-2px);box-shadow:var(--sh2);}
+.ch{font-size:17px;font-weight:700;color:var(--t1);margin-bottom:3px;}
+.cs{font-size:14px;color:var(--t3);}
+
+/* ─── HERO ─── */
+.hero{
+  background:linear-gradient(135deg,var(--b1) 0%,var(--g1) 55%,#0a4f70 100%);
+  border-radius:var(--rxl);padding:30px 34px;color:white;margin-bottom:22px;
+  position:relative;overflow:hidden;animation:fadeUp .4s ease;
+}
+.hero-orb{position:absolute;border-radius:50%;pointer-events:none;}
+.hero .hero-orb.a{width:280px;height:280px;top:-80px;right:-50px;background:radial-gradient(circle,rgba(21,197,179,.22),transparent 70%);animation:float 6s ease-in-out infinite;}
+.hero .hero-orb.b{width:180px;height:180px;bottom:-60px;left:15%;background:radial-gradient(circle,rgba(46,134,222,.18),transparent 70%);animation:float 8s ease-in-out infinite reverse;}
+.hero-tag{font-size:12px;font-weight:700;letter-spacing:2px;text-transform:uppercase;opacity:.7;margin-bottom:7px;}
+.hero-name{font-family:'Playfair Display',serif;font-size:34px;font-weight:700;margin-bottom:5px;}
+.hero-sub{font-size:15px;opacity:.75;margin-bottom:22px;}
+.hero-chips{display:flex;gap:9px;flex-wrap:wrap;}
+.hero-chip{display:flex;align-items:center;gap:7px;background:rgba(255,255,255,.14);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.22);color:white;padding:9px 16px;border-radius:30px;font-size:14px;font-weight:600;cursor:pointer;transition:all .2s;}
+.hero-chip:hover{background:rgba(255,255,255,.26);transform:translateY(-2px);}
+.hero-score{position:absolute;right:34px;top:50%;transform:translateY(-50%);text-align:center;}
+.hs-ring{position:relative;width:120px;height:120px;}
+.hs-ring svg{position:absolute;top:0;left:0;transform:rotate(-90deg);}
+.hs-inner{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+.hs-val{font-size:32px;font-weight:900;color:var(--g4);}
+.hs-lbl{font-size:11px;opacity:.6;font-weight:600;}
+
+/* ─── STATS ─── */
+.stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;}
+.stat{background:white;border-radius:var(--rl);padding:17px 15px;box-shadow:var(--sh1);border:1px solid var(--border);display:flex;align-items:center;gap:13px;cursor:pointer;transition:all .2s;animation:fadeUp .4s ease both;}
+.stat:hover{transform:translateY(-3px);box-shadow:var(--sh2);}
+.stat-ico{width:46px;height:46px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:21px;flex-shrink:0;}
+.stat-n{font-size:24px;font-weight:900;line-height:1.1;}
+.stat-l{font-size:13px;color:var(--t3);font-weight:500;margin-top:2px;}
+
+/* ─── MED CARDS ─── */
+.med-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:15px;}
+.med-card{background:white;border-radius:var(--rl);padding:20px;box-shadow:var(--sh1);border:1px solid var(--border);position:relative;overflow:hidden;transition:all .2s;animation:fadeUp .4s ease both;}
+.med-card:hover{transform:translateY(-3px);box-shadow:var(--sh2);}
+.med-stripe{position:absolute;top:0;left:0;right:0;height:4px;}
+.med-sb{position:absolute;top:16px;right:16px;padding:4px 11px;border-radius:20px;font-size:12px;font-weight:800;}
+.ms-taken{background:#e8f7ef;color:#1a7a44;}
+.ms-pending{background:#fff3e0;color:#a05000;}
+.ms-missed{background:var(--redpale);color:var(--red);animation:alertPop 2s ease-in-out infinite;}
+.med-ico{font-size:30px;margin-bottom:9px;}
+.med-name{font-size:19px;font-weight:800;color:var(--t1);margin-bottom:3px;}
+.med-dose{font-size:14px;color:var(--t3);margin-bottom:2px;}
+.med-chips{display:flex;gap:7px;margin-top:10px;flex-wrap:wrap;}
+.mc{background:var(--gpale);color:var(--g2);padding:4px 11px;border-radius:20px;font-size:13px;font-weight:600;}
+.mc-b{background:var(--bpale);color:var(--b2);}
+.med-acts{display:flex;gap:9px;margin-top:14px;}
+
+/* ─── APPT ─── */
+.appt-card{background:white;border-radius:var(--rl);padding:19px 22px;box-shadow:var(--sh1);border:1px solid var(--border);display:flex;align-items:center;gap:18px;margin-bottom:13px;transition:all .2s;}
+.appt-card:hover{transform:translateX(4px);box-shadow:var(--sh2);}
+.appt-cal{background:linear-gradient(135deg,var(--g2),var(--b3));color:white;border-radius:13px;padding:9px 15px;text-align:center;flex-shrink:0;min-width:66px;}
+.appt-day{font-size:26px;font-weight:900;line-height:1;}
+.appt-mon{font-size:12px;font-weight:800;letter-spacing:1px;opacity:.9;}
+.appt-inf{flex:1;}
+.appt-name{font-size:17px;font-weight:700;}
+.appt-spec{font-size:14px;color:var(--t3);margin-top:2px;}
+.appt-note{font-size:13px;color:var(--t3);margin-top:3px;}
+.appt-tc{display:inline-flex;align-items:center;gap:6px;background:var(--bpale);color:var(--b2);padding:4px 11px;border-radius:20px;font-size:13px;font-weight:600;margin-top:7px;}
+
+/* ─── VITALS ─── */
+.vitals-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.vital-card{background:white;border-radius:var(--rl);padding:20px;box-shadow:var(--sh1);border:1px solid var(--border);text-align:center;transition:all .2s;}
+.vital-card:hover{transform:translateY(-3px);box-shadow:var(--sh2);}
+.v-emoji{font-size:38px;margin-bottom:9px;}
+.v-val{font-size:26px;font-weight:900;color:var(--g2);}
+.v-unit{font-size:12px;color:var(--t3);font-weight:600;}
+.v-label{font-size:14px;font-weight:700;color:var(--t2);margin-top:5px;}
+.v-chip{font-size:12px;font-weight:700;padding:3px 11px;border-radius:20px;display:inline-block;margin-top:5px;}
+.ok{background:#e8f7ef;color:#1a7a44;} .warn{background:#fff3e0;color:#a05000;} .bad{background:var(--redpale);color:var(--red);}
+
+/* ─── CHAT ─── */
+.chat-wrap{background:white;border-radius:var(--rl);box-shadow:var(--sh1);border:1px solid var(--border);display:flex;flex-direction:column;height:570px;overflow:hidden;}
+.chat-top{background:linear-gradient(135deg,var(--b1),var(--g1));padding:16px 20px;display:flex;align-items:center;gap:13px;flex-shrink:0;}
+.chat-av{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--g4),var(--b3));display:flex;align-items:center;justify-content:center;font-size:21px;box-shadow:0 3px 12px rgba(21,197,179,.5);animation:heartbeat 3.5s ease-in-out infinite;}
+.chat-aname{font-size:16px;font-weight:700;color:white;}
+.chat-asub{font-size:12px;color:rgba(255,255,255,.6);}
+.chat-msgs{flex:1;padding:18px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;}
+.msg{max-width:80%;padding:13px 17px;border-radius:18px;font-size:16px;line-height:1.65;animation:fadeUp .3s ease;}
+.msg.ai{background:linear-gradient(135deg,var(--gpale),var(--bpale));border:1px solid var(--border);color:var(--t1);border-bottom-left-radius:4px;align-self:flex-start;}
+.msg.user{background:linear-gradient(135deg,var(--b1),var(--g1));color:white;border-bottom-right-radius:4px;align-self:flex-end;}
+.msg-t{font-size:11px;opacity:.5;margin-top:4px;}
+.chat-in-row{padding:14px 16px;border-top:1px solid var(--border);display:flex;gap:9px;flex-shrink:0;}
+.chat-inp{flex:1;padding:12px 16px;border-radius:var(--r);border:2px solid var(--border);font-size:15px;font-family:'Outfit',sans-serif;outline:none;transition:border .2s;background:white;}
+.chat-inp:focus{border-color:var(--g2);}
+.voice-btn{width:44px;height:44px;border-radius:50%;background:var(--gpale);border:2px solid var(--border);cursor:pointer;font-size:19px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.voice-btn.listening{background:linear-gradient(135deg,var(--g2),var(--g4));color:white;border-color:var(--g2);animation:micPulse 1.5s infinite;}
+.voice-fab{position:fixed;bottom:108px;right:26px;z-index:400;width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,var(--g2),var(--g4));color:white;box-shadow:0 8px 28px rgba(21,197,179,.45);display:flex;align-items:center;justify-content:center;font-size:26px;transition:all .3s;}
+.voice-fab:hover{transform:scale(1.1) translateY(-4px);box-shadow:0 12px 32px rgba(21,197,179,.6);}
+.voice-fab.listening{animation:micPulse 1.5s infinite;}
+
+/* ─── AI ALERT ─── */
+.ai-al{border-radius:var(--rl);padding:15px 18px;margin-bottom:13px;display:flex;gap:13px;border:1px solid;animation:fadeUp .4s ease;}
+.ai-al.miss{background:var(--redpale);border-color:#f5a8a1;}
+.ai-al.warn{background:var(--orpale);border-color:#f5cfa8;}
+.ai-al.info{background:var(--gpale);border-color:#a8dad6;}
+.ai-al.suc{background:#e8f7ef;border-color:#a8d8be;}
+.ai-al-ico{font-size:26px;flex-shrink:0;margin-top:1px;}
+.ai-al-title{font-size:15px;font-weight:800;margin-bottom:2px;}
+.ai-al-text{font-size:14px;line-height:1.6;color:var(--t2);}
+.ai-al-acts{display:flex;gap:8px;margin-top:9px;flex-wrap:wrap;}
+
+/* ─── CAREGIVERS ─── */
+.cg-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:15px;}
+.cg-card{background:white;border-radius:var(--rl);padding:22px;box-shadow:var(--sh1);border:1px solid var(--border);text-align:center;transition:all .2s;animation:fadeUp .4s ease both;}
+.cg-card:hover{transform:translateY(-4px);box-shadow:var(--sh3);}
+.cg-av{width:72px;height:72px;border-radius:50%;margin:0 auto 11px;display:flex;align-items:center;justify-content:center;font-size:32px;box-shadow:0 4px 14px rgba(0,0,0,.1);}
+.cg-name{font-size:17px;font-weight:700;margin-bottom:3px;}
+.cg-role{font-size:13px;color:var(--t3);margin-bottom:5px;}
+.cg-phone{font-size:13px;color:var(--g2);font-weight:700;margin-bottom:13px;}
+.cg-btns{display:flex;gap:7px;justify-content:center;flex-wrap:wrap;}
+
+/* ─── REMINDER ─── */
+.rem-item{background:white;border-radius:var(--r);padding:14px 18px;box-shadow:var(--sh1);border:1px solid var(--border);display:flex;align-items:center;gap:14px;margin-bottom:10px;transition:all .2s;}
+.rem-item:hover{transform:translateX(4px);}
+.rem-time{background:linear-gradient(135deg,var(--g2),var(--g4));color:white;border-radius:var(--r);padding:7px 13px;font-size:13px;font-weight:800;text-align:center;flex-shrink:0;min-width:72px;}
+.rem-chk{width:30px;height:30px;border-radius:7px;border:3px solid var(--g2);cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:16px;transition:all .2s;}
+.rem-chk.done{background:var(--g2);border-color:var(--g2);color:white;}
+.rem-txt{flex:1;font-size:15px;font-weight:600;}
+.rem-txt.done{text-decoration:line-through;color:var(--t3);}
+
+/* ─── PROGRESS ─── */
+.prog{background:var(--gpale);border-radius:20px;height:11px;overflow:hidden;margin-top:7px;}
+.prog-f{height:100%;border-radius:20px;background:linear-gradient(90deg,var(--g2),var(--g4));transition:width 1.2s ease;}
+
+/* ─── MODAL ─── */
+.overlay{position:fixed;inset:0;background:rgba(10,37,64,.65);z-index:600;display:none;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(4px);}
+.overlay.open{display:flex;}
+.modal{background:white;border-radius:var(--rxl);padding:34px;max-width:480px;width:100%;box-shadow:var(--sh3);animation:scaleIn .35s ease;position:relative;max-height:92vh;overflow-y:auto;}
+.modal-close{position:absolute;top:16px;right:16px;width:32px;height:32px;border-radius:50%;border:none;background:var(--bg);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:all .2s;}
+.modal-close:hover{background:var(--border);}
+.modal-icon{font-size:48px;text-align:center;margin-bottom:9px;}
+.modal-title{font-family:'Playfair Display',serif;font-size:24px;text-align:center;margin-bottom:5px;}
+.modal-desc{font-size:14px;color:var(--t3);text-align:center;margin-bottom:22px;}
+.modal.sos-m{border:3px solid var(--red);}
+.sos-title{color:var(--red);}
+.sos-contacts{display:flex;flex-direction:column;gap:11px;}
+.sos-btn{width:100%;padding:15px 17px;border-radius:14px;border:none;cursor:pointer;font-size:16px;font-weight:800;font-family:'Outfit',sans-serif;display:flex;align-items:center;gap:11px;transition:all .2s;}
+.sos-btn:hover{transform:scale(1.02);}
+.s-r{background:linear-gradient(135deg,var(--red),var(--redm));color:white;box-shadow:0 4px 14px rgba(185,43,43,.3);}
+.s-b{background:linear-gradient(135deg,var(--b1),var(--b3));color:white;}
+.s-g{background:linear-gradient(135deg,var(--g1),var(--g3));color:white;}
+.s-k{background:linear-gradient(135deg,#333,#555);color:white;}
+
+/* ─── SOS FAB ─── */
+.sos-fab{position:fixed;bottom:26px;right:26px;z-index:400;width:72px;height:72px;border-radius:50%;border:none;cursor:pointer;background:linear-gradient(135deg,var(--red),var(--redm));color:white;box-shadow:0 8px 28px rgba(185,43,43,.55);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;font-weight:900;gap:2px;animation:sosPulse 2.2s ease-in-out infinite;transition:transform .2s;letter-spacing:1px;}
+.sos-fab:hover{transform:scale(1.12);}
+.sos-fab-ico{font-size:22px;}
+
+/* ─── TOAST ─── */
+.toast-wrap{position:fixed;top:76px;right:18px;z-index:700;display:flex;flex-direction:column;gap:9px;min-width:310px;}
+.toast{background:white;border-radius:14px;padding:14px 17px;box-shadow:var(--sh2);display:flex;align-items:flex-start;gap:11px;border-left:5px solid var(--g2);animation:toastIn .35s ease;font-size:15px;}
+.toast.t-warn{border-color:var(--orange);}
+.toast.t-err{border-color:var(--red);}
+.toast.t-info{border-color:var(--b2);}
+.toast-ico{font-size:21px;flex-shrink:0;}
+.toast-title{font-size:14px;font-weight:800;display:block;}
+.toast-desc{font-size:13px;color:var(--t3);}
+
+/* ─── EC STRIP ─── */
+.ec-strip{background:linear-gradient(135deg,var(--red),#8b1a1a);border-radius:var(--rl);padding:15px 20px;color:white;display:flex;align-items:center;justify-content:space-between;gap:13px;margin-bottom:22px;flex-wrap:wrap;}
+.ec-strip-ico{font-size:30px;animation:alertPop 3s ease-in-out infinite;}
+.ec-strip-t{flex:1;}
+.ec-strip-title{font-size:16px;font-weight:800;margin-bottom:1px;}
+.ec-strip-sub{font-size:13px;opacity:.8;}
+.ec-strip-btn{background:white;color:var(--red);padding:9px 18px;border-radius:9px;font-weight:800;font-size:14px;border:none;cursor:pointer;font-family:'Outfit',sans-serif;transition:all .2s;}
+.ec-strip-btn:hover{transform:scale(1.05);}
+
+/* ─── INSIGHT ─── */
+.insight{background:linear-gradient(135deg,var(--gpale),var(--bpale));border-radius:var(--r);padding:16px 18px;border:1px solid var(--border);margin-bottom:12px;display:flex;gap:13px;animation:fadeUp .4s ease;}
+.insight-ico{font-size:28px;flex-shrink:0;animation:float 4s ease-in-out infinite;}
+.insight-tag{font-size:11px;font-weight:800;letter-spacing:1.5px;text-transform:uppercase;color:var(--g2);margin-bottom:3px;}
+.insight-text{font-size:14px;line-height:1.65;color:var(--t2);}
+
+/* ─── WEEK DOTS ─── */
+.week-dots{display:flex;gap:7px;margin-top:11px;}
+.wd{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;cursor:pointer;}
+.wd.t{background:var(--g2);color:white;}
+.wd.m{background:var(--redm);color:white;animation:alertPop 2.5s ease-in-out infinite;}
+.wd.p{background:var(--bg2);color:var(--t3);border:2px solid var(--border);}
+
+/* ─── TOGGLE ─── */
+.trow{display:flex;align-items:center;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--border);}
+.t-title{font-size:16px;font-weight:700;}
+.t-desc{font-size:13px;color:var(--t3);margin-top:2px;}
+.toggle{width:48px;height:26px;background:#ccc;border-radius:30px;position:relative;cursor:pointer;transition:background .3s;flex-shrink:0;}
+.toggle.on{background:var(--g2);}
+.toggle::after{content:'';position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:white;transition:left .3s;box-shadow:0 2px 5px rgba(0,0,0,.2);}
+.toggle.on::after{left:25px;}
+
+/* ─── GRID HELPERS ─── */
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:18px;}
+.g3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+
+/* ─── MISC ─── */
+.tag{background:var(--gpale);color:var(--g2);padding:4px 11px;border-radius:20px;font-size:13px;font-weight:600;}
+.tag-b{background:var(--bpale);color:var(--b2);}
+.tag-r{background:var(--redpale);color:var(--red);}
+.divider{height:1px;background:var(--border);margin:16px 0;}
+.report-big{font-size:38px;font-weight:900;color:var(--g2);}
+.report-lbl{font-size:13px;color:var(--t3);margin-top:3px;}
+
+/* ─── RESPONSIVE ─── */
+@media(max-width:1100px){.stats-grid{grid-template-columns:repeat(2,1fr);}.vitals-grid{grid-template-columns:repeat(2,1fr);}.g2{grid-template-columns:1fr;}.hero-score{display:none;}.auth-left{display:none;}.auth-right{flex:1;max-width:100%;}.f-row{grid-template-columns:1fr;}}
+@media(max-width:700px){.sidebar{display:none;}.stats-grid{grid-template-columns:1fr 1fr;}.hdr{padding:0 14px;}.main{padding:14px;}.sos-fab{width:58px;height:58px;bottom:14px;right:14px;}.voice-fab{width:58px;height:58px;bottom:84px;right:14px;font-size:22px;}}
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════
+     AUTH SCREEN
+══════════════════════════════════════════ -->
+<div id="authScreen">
+  <div class="auth-bg-orb o1"></div>
+  <div class="auth-bg-orb o2"></div>
+
+  <!-- LEFT PANEL -->
+  <div class="auth-left">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">💚</div>
+      <div>
+        <span class="auth-logo-name">Mediswift</span>
+        <span class="auth-logo-badge">PRO</span>
+      </div>
+    </div>
+    <div class="auth-headline">Your Intelligent<br><em>Health Companion</em></div>
+    <div class="auth-sub">A complete healthcare platform designed with love for senior citizens. Stay safe, stay on schedule, and stay connected with those who care for you.</div>
+    <div class="auth-features">
+      <div class="auth-feat"><span class="auth-feat-icon">💊</span><span class="auth-feat-text">Smart medication reminders with AI monitoring</span></div>
+      <div class="auth-feat"><span class="auth-feat-icon">🤖</span><span class="auth-feat-text">AI assistant — always available</span></div>
+      <div class="auth-feat"><span class="auth-feat-icon">👨‍👩‍👧</span><span class="auth-feat-text">Automatic family alerts when medications are missed</span></div>
+      <div class="auth-feat"><span class="auth-feat-icon">🆘</span><span class="auth-feat-text">One-tap emergency SOS to family & hospital</span></div>
+    </div>
+  </div>
+
+  <!-- RIGHT PANEL -->
+  <div class="auth-right">
+
+    <!-- LOGIN PANEL -->
+    <div class="auth-panel active" id="loginPanel">
+      <div style="font-size:42px;text-align:center;margin-bottom:12px;">💚</div>
+      <div class="auth-panel-title" style="text-align:center;">Welcome Back</div>
+      <div class="auth-panel-sub" style="text-align:center;">Sign in to your Mediswift account</div>
+      <div class="err-msg" id="loginErr"></div>
+      <div class="f-grp"><label class="f-lbl">📧 Email Address</label><input class="f-inp" id="loginEmail" type="email" placeholder="your@email.com" autocomplete="email"></div>
+      <div class="f-grp"><label class="f-lbl">🔒 Password</label><input class="f-inp" id="loginPass" type="password" placeholder="Enter your password"></div>
+      <button class="btn btn-primary btn-block btn-lg" style="margin-top:4px;" onclick="doLogin()">🚀 Sign In to Mediswift</button>
+      <div class="auth-divider">or</div>
+      <button class="btn btn-secondary btn-block" onclick="demoLogin()">👁️ Try Demo — Robert Hayes (Age 72)</button>
+      <div class="auth-switch">Don't have an account? <a onclick="showAuth('registerPanel')">Create one free →</a></div>
+    </div>
+
+    <!-- REGISTER PANEL -->
+    <div class="auth-panel" id="registerPanel">
+      <div style="font-size:36px;text-align:center;margin-bottom:10px;">👤</div>
+      <div class="auth-panel-title" style="text-align:center;">Create Your Account</div>
+      <div class="auth-panel-sub" style="text-align:center;">Step <span id="stepNum">1</span> of 3 — Your personal details</div>
+      <div class="step-indicator" id="stepDots">
+        <div class="step-dot active"></div>
+        <div class="step-dot"></div>
+        <div class="step-dot"></div>
+      </div>
+      <div class="err-msg" id="regErr"></div>
+      <div class="suc-msg" id="regSuc"></div>
+
+      <!-- STEP 1: Personal Info -->
+      <div id="regStep1">
+        <div class="f-row">
+          <div class="f-grp"><label class="f-lbl">First Name</label><input class="f-inp" id="rFName" placeholder="e.g. Robert"></div>
+          <div class="f-grp"><label class="f-lbl">Last Name</label><input class="f-inp" id="rLName" placeholder="e.g. Hayes"></div>
+        </div>
+        <div class="f-row">
+          <div class="f-grp"><label class="f-lbl">📅 Date of Birth</label><input class="f-inp" id="rDOB" type="date"></div>
+          <div class="f-grp"><label class="f-lbl">⚧ Gender</label><select class="f-sel" id="rGender"><option value="">Select</option><option>Male</option><option>Female</option><option>Other</option></select></div>
+        </div>
+        <div class="f-grp"><label class="f-lbl">📞 Phone Number</label><input class="f-inp" id="rPhone" type="tel" placeholder="+1 (555) 000-0000"></div>
+        <div class="f-grp"><label class="f-lbl">📍 City / Location</label><input class="f-inp" id="rCity" placeholder="e.g. New York, NY"></div>
+        <button class="btn btn-primary btn-block btn-lg" onclick="nextStep(2)">Continue →</button>
+      </div>
+
+      <!-- STEP 2: Health Info -->
+      <div id="regStep2" style="display:none;">
+        <div class="f-grp"><label class="f-lbl">🏥 Primary Doctor Name</label><input class="f-inp" id="rDoc" placeholder="e.g. Dr. Sarah Williams"></div>
+        <div class="f-grp"><label class="f-lbl">📋 Medical Conditions (optional)</label><input class="f-inp" id="rCond" placeholder="e.g. Diabetes, Hypertension"></div>
+        <div class="f-row">
+          <div class="f-grp"><label class="f-lbl">🩸 Blood Type</label><select class="f-sel" id="rBlood"><option value="">Unknown</option><option>A+</option><option>A-</option><option>B+</option><option>B-</option><option>AB+</option><option>AB-</option><option>O+</option><option>O-</option></select></div>
+          <div class="f-grp"><label class="f-lbl">⚖️ Weight (lbs)</label><input class="f-inp" id="rWeight" type="number" placeholder="e.g. 160"></div>
+        </div>
+        <div class="f-grp"><label class="f-lbl">👨‍👩‍👧 Emergency Contact Name</label><input class="f-inp" id="rECName" placeholder="e.g. Sarah Hayes (Daughter)"></div>
+        <div class="f-grp"><label class="f-lbl">📞 Emergency Contact Phone</label><input class="f-inp" id="rECPhone" type="tel" placeholder="+1 (555) 000-0000"></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="nextStep(1)">← Back</button>
+          <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="nextStep(3)">Continue →</button>
+        </div>
+      </div>
+
+      <!-- STEP 3: Account Security -->
+      <div id="regStep3" style="display:none;">
+        <div class="f-grp"><label class="f-lbl">📧 Email Address</label><input class="f-inp" id="rEmail" type="email" placeholder="your@email.com"></div>
+        <div class="f-grp"><label class="f-lbl">🔒 Password</label><input class="f-inp" id="rPass" type="password" placeholder="At least 6 characters"><div class="field-hint">Use a password you can remember easily</div></div>
+        <div class="f-grp"><label class="f-lbl">🔒 Confirm Password</label><input class="f-inp" id="rPass2" type="password" placeholder="Type password again"></div>
+        <div class="f-grp"><label class="f-lbl">🏥 Preferred Hospital</label><input class="f-inp" id="rHosp" placeholder="e.g. St. Mary's Medical Center"></div>
+        <div style="display:flex;gap:10px;">
+          <button class="btn btn-ghost" onclick="nextStep(2)">← Back</button>
+          <button class="btn btn-primary" style="flex:1;justify-content:center;" onclick="doRegister()">✅ Create My Account</button>
+        </div>
+      </div>
+
+      <div class="auth-switch">Already have an account? <a onclick="showAuth('loginPanel')">Sign in →</a></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     MAIN APP
+══════════════════════════════════════════ -->
+<div id="appScreen">
+
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="hdr-brand" onclick="nav('dashboard')">
+      <div class="hdr-logo">💚</div>
+      <div>
+        <div style="display:flex;align-items:center;gap:7px;">
+          <span class="hdr-name">Mediswift</span><span class="hdr-pro">PRO</span>
+        </div>
+        <div style="font-size:10px;color:rgba(255,255,255,.45);letter-spacing:1px;">SENIOR CARE PLATFORM</div>
+      </div>
+    </div>
+    <div class="hdr-center">
+      <div>
+        <div class="hdr-clock" id="clockEl">--:-- --</div>
+        <div class="hdr-date" id="dateEl"></div>
+      </div>
+    </div>
+    <div class="hdr-right">
+      <button class="hdr-ai-btn" onclick="nav('ai-assistant')">
+        <span class="hdr-ai-dot"></span>AI Medi Active
+      </button>
+      <div class="hdr-user">
+        <div class="hdr-av" id="hdrAv">R</div>
+        <div>
+          <div class="hdr-uname" id="hdrName">Robert Hayes</div>
+          <div class="hdr-uid" id="hdrId">ID: MS-0000</div>
+        </div>
+      </div>
+      <button class="hdr-logout" onclick="doLogout()">Sign Out</button>
+    </div>
+  </header>
+
+  <div class="app-layout">
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="nav-sect">Overview</div>
+      <div class="nav-item active" onclick="nav('dashboard')"><span class="nav-ico">🏠</span>Dashboard</div>
+      <div class="nav-item" onclick="nav('ai-monitor')"><span class="nav-ico">🤖</span>AI Monitor<span class="nav-bd" id="aiBd">2</span></div>
+      <div class="nav-sect">My Health</div>
+      <div class="nav-item" onclick="nav('medications')"><span class="nav-ico">💊</span>Medications<span class="nav-bd" id="medBd">3</span></div>
+      <div class="nav-item" onclick="nav('appointments')"><span class="nav-ico">📅</span>Appointments</div>
+      <div class="nav-item" onclick="nav('vitals')"><span class="nav-ico">❤️</span>Vitals & Health</div>
+      <div class="nav-item" onclick="nav('food-diary')"><span class="nav-ico">🥗</span>Food Diary</div>
+      <div class="nav-item" onclick="nav('reports')"><span class="nav-ico">📊</span>Reports</div>
+      <div class="nav-sect">My Care</div>
+      <div class="nav-item" onclick="nav('ai-assistant')"><span class="nav-ico">💬</span>AI Assistant</div>
+      <div class="nav-item" onclick="nav('caregivers')"><span class="nav-ico">👨‍👩‍👧</span>Care Network</div>
+      <div class="nav-item" onclick="nav('reminders')"><span class="nav-ico">🔔</span>Reminders<span class="nav-bd warn" id="remBd">5</span></div>
+      <div class="nav-item" onclick="nav('health-tips')"><span class="nav-ico">🌿</span>Health Tips</div>
+      <div class="nav-sect">Account</div>
+      <div class="nav-item" onclick="nav('profile')"><span class="nav-ico">👤</span>My Profile</div>
+      <div class="nav-item" onclick="nav('settings')"><span class="nav-ico">⚙️</span>Settings</div>
+      <div class="sb-sos">
+        <button class="sos-sb-btn" onclick="openSOS()">🆘 Emergency SOS</button>
+      </div>
+    </nav>
+
+    <!-- ─── DASHBOARD ─── -->
+    <div class="main active" id="sec-dashboard">
+      <div class="hero" style="padding-right:180px;">
+        <div class="hero-orb a"></div><div class="hero-orb b"></div>
+        <div class="hero-tag">👋 Welcome back</div>
+        <div class="hero-name" id="heroName">Good Morning, Robert</div>
+        <div class="hero-sub" id="heroSub">Here's your health summary for today — you're doing great!</div>
+        <div class="hero-chips">
+          <div class="hero-chip" onclick="nav('medications')">💊 <span id="pendingCount">3</span> Doses Pending</div>
+          <div class="hero-chip" onclick="nav('appointments')">📅 Next: May 15</div>
+          <div class="hero-chip" onclick="nav('ai-monitor')">🤖 AI Monitoring Active</div>
+          <div class="hero-chip" onclick="openSOS()">🆘 SOS Help</div>
+        </div>
+        <div class="hero-score">
+          <div style="font-size:12px;color:rgba(255,255,255,.6);margin-bottom:8px;font-weight:600;">Health Score</div>
+          <div class="hs-ring">
+            <svg width="120" height="120" viewBox="0 0 120 120">
+              <circle cx="60" cy="60" r="50" fill="none" stroke="rgba(255,255,255,.15)" stroke-width="9"/>
+              <circle cx="60" cy="60" r="50" fill="none" stroke="url(#hsg)" stroke-width="9" stroke-dasharray="314.16" stroke-dashoffset="40" stroke-linecap="round"/>
+              <defs><linearGradient id="hsg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#15c5b3"/><stop offset="100%" stop-color="#2e86de"/></linearGradient></defs>
+            </svg>
+            <div class="hs-inner"><div class="hs-val" id="healthScore">87</div><div class="hs-lbl">/ 100</div></div>
+          </div>
+          <div style="color:rgba(255,255,255,.85);font-weight:700;margin-top:7px;font-size:14px;">🏆 Excellent</div>
+        </div>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat" onclick="nav('medications')" style="animation-delay:.05s">
+          <div class="stat-ico" style="background:#e6f5f3;"><span>💊</span></div>
+          <div><div class="stat-n" style="color:var(--g2)" id="s-meds">8/11</div><div class="stat-l">Meds Taken Today</div></div>
+        </div>
+        <div class="stat" onclick="nav('appointments')" style="animation-delay:.1s">
+          <div class="stat-ico" style="background:var(--bpale);"><span>📅</span></div>
+          <div><div class="stat-n" style="color:var(--b2)">3</div><div class="stat-l">Appointments</div></div>
+        </div>
+        <div class="stat" style="animation-delay:.15s">
+          <div class="stat-ico" style="background:#fff3e0;"><span>🚶</span></div>
+          <div><div class="stat-n" style="color:var(--orange)">4,280</div><div class="stat-l">Steps Today</div></div>
+        </div>
+        <div class="stat" onclick="nav('vitals')" style="animation-delay:.2s">
+          <div class="stat-ico" style="background:var(--redpale);"><span>❤️</span></div>
+          <div><div class="stat-n" style="color:var(--redm)">72</div><div class="stat-l">Heart Rate (bpm)</div></div>
+        </div>
+      </div>
+
+      <div id="dashAlerts"></div>
+
+      <div class="g2" style="margin-bottom:18px;">
+        <div class="card">
+          <div class="ch">📊 Weekly Adherence</div><div class="cs" style="margin-bottom:14px;">Medications taken vs scheduled</div>
+          <div style="font-weight:600;font-size:14px;display:flex;justify-content:space-between;"><span>Morning</span><span style="color:var(--g2)">6/7</span></div>
+          <div class="prog"><div class="prog-f" style="width:86%"></div></div>
+          <div style="font-weight:600;font-size:14px;display:flex;justify-content:space-between;margin-top:12px;"><span>Afternoon</span><span style="color:var(--orange)">5/7</span></div>
+          <div class="prog"><div class="prog-f" style="width:71%;background:linear-gradient(90deg,var(--orange),#f5b942)"></div></div>
+          <div style="font-weight:600;font-size:14px;display:flex;justify-content:space-between;margin-top:12px;"><span>Evening</span><span style="color:var(--g2)">7/7</span></div>
+          <div class="prog"><div class="prog-f" style="width:100%"></div></div>
+          <div class="week-dots">
+            <div class="wd t">M</div><div class="wd t">T</div><div class="wd t">W</div>
+            <div class="wd t">T</div><div class="wd m">F</div><div class="wd t">S</div><div class="wd p">S</div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch">🧠 AI Health Insights</div><div class="cs" style="margin-bottom:14px;">Powered by Medi AI</div>
+          <div class="insight"><div class="insight-ico">💡</div><div><div class="insight-tag">Smart Tip</div><div class="insight-text">Your BP was 128/82 — slightly elevated. Try 5 minutes of deep breathing and reduce salt intake today.</div></div></div>
+          <div class="insight" style="background:linear-gradient(135deg,#fff3e0,#fef9f0);border-color:#f5cfa8;"><div class="insight-ico" style="animation-delay:1s">⚠️</div><div><div class="insight-tag" style="color:var(--orange)">Missed Dose</div><div class="insight-text">Metformin missed on Friday. Your family was automatically notified by Medi.</div></div></div>
+        </div>
+      </div>
+
+      <div class="card" style="background:linear-gradient(135deg,#e6f5f3,white);">
+        <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:14px;">
+          <div>
+            <div class="ch">⏰ Next Medication Due</div>
+            <div style="font-family:'Playfair Display',serif;font-size:26px;color:var(--g2);margin:9px 0;">Amlodipine 5mg</div>
+            <div style="font-size:15px;color:var(--t3);">Take with water after dinner</div>
+            <div style="display:flex;gap:8px;margin-top:9px;"><span class="tag tag-b">⏰ 7:00 PM</span><span class="tag">Once Daily</span></div>
+          </div>
+          <div style="text-align:center;">
+            <div style="font-size:44px;font-weight:900;color:var(--g2);line-height:1" id="countdown">2h 14m</div>
+            <div style="font-size:14px;color:var(--t3);margin-bottom:11px;">until next dose</div>
+            <button class="btn btn-primary btn-lg" onclick="quickTaken('Amlodipine 5mg')">✅ Mark as Taken</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── AI MONITOR ─── -->
+    <div class="main" id="sec-ai-monitor">
+      <div class="ph"><h1>🤖 AI Health Monitor</h1><p>Real-time tracking, family alerts, and intelligent notifications</p></div>
+      <div id="aiMonAlerts" style="margin-bottom:22px;"></div>
+      <div class="g2">
+        <div class="card">
+          <div class="ch">📡 What Medi Is Monitoring</div>
+          <div style="display:flex;flex-direction:column;gap:10px;margin-top:16px;" id="monitorList"></div>
+        </div>
+        <div class="card">
+          <div class="ch">📬 Family Notifications Sent</div>
+          <div id="notifLog" style="margin-top:14px;display:flex;flex-direction:column;gap:9px;"></div>
+          <button class="btn btn-ghost btn-block" style="margin-top:12px;" onclick="testNotif()">📤 Send Test Notification</button>
+        </div>
+      </div>
+      <div class="card" style="margin-top:18px;">
+        <div class="ch">⚙️ AI Alert Settings</div>
+        <div style="margin-top:14px;">
+          <div class="trow"><div><div class="t-title">Alert family when medication is missed</div><div class="t-desc">Notifies emergency contact if dose is 30+ min overdue</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="trow"><div><div class="t-title">Alert doctor when vitals are abnormal</div><div class="t-desc">Sends summary to your doctor if readings are dangerous</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="trow"><div><div class="t-title">Daily health summary to caregivers</div><div class="t-desc">Evening report sent to all caregivers at 8 PM</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          <div class="trow" style="border-bottom:none;"><div><div class="t-title">Voice reminders for medications</div><div class="t-desc">Medi speaks your medication reminders aloud</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── MEDICATIONS ─── -->
+    <div class="main" id="sec-medications">
+      <div class="ph-row">
+        <div class="ph" style="margin-bottom:0"><h1>💊 My Medications</h1><p>Manage prescriptions and track daily doses</p></div>
+        <div style="display:flex;gap:9px;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="openModal('addMedMod')">➕ Add Medication</button>
+          <button class="btn btn-ghost" onclick="nav('reports')">📊 View Report</button>
+        </div>
+      </div>
+      
+      <!-- AI OCR SCANNER CARD -->
+      <div class="card" style="margin-top:20px; background:linear-gradient(135deg, white, var(--gpale)); border: 1px solid var(--g3);">
+        <div class="ch" style="color:var(--g2); display:flex; align-items:center; gap:8px;">🤖 AI Prescription Scanner</div>
+        <p style="font-size:15px; color:var(--t2); margin-top:6px;">Upload a picture of your prescription. Medi AI will instantly read, extract, and schedule your medications automatically.</p>
+        
+        <div id="rxDropzone" class="rx-dropzone" onclick="document.getElementById('rxInput').click()" ondragover="event.preventDefault()" ondrop="event.preventDefault(); document.getElementById('rxInput').files = event.dataTransfer.files; handleRxUpload(document.getElementById('rxInput'))">
+           <input type="file" id="rxInput" accept="image/*" style="display:none;" onchange="handleRxUpload(this)">
+           <div class="rx-icon">📄</div>
+           <div style="font-size:18px; font-weight:700; color:var(--g2);">Click or drag prescription here to scan</div>
+           <div style="font-size:13px; color:var(--t3); margin-top:4px;">Supports JPG, PNG images</div>
+        </div>
+        
+        <div id="rxScanning" style="display:none; text-align:center; padding: 30px 0;">
+           <div class="rx-scan-area">
+              <div class="rx-scan-laser"></div>
+           </div>
+           <div class="rx-progress-bar"><div class="rx-progress-fill" id="rxProgFill"></div></div>
+           <div id="rxProgText" style="margin-top:15px; font-size:16px; font-weight:700; color:var(--g2); animation:pulse 1.5s infinite;">Medi AI is reading your prescription...</div>
+        </div>
+      </div>
+
+      <div class="med-grid" id="medGrid" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- ─── APPOINTMENTS ─── -->
+    <div class="main" id="sec-appointments">
+      <div class="ph-row">
+        <div class="ph" style="margin-bottom:0"><h1>📅 Appointments</h1><p>Upcoming visits and follow-up care</p></div>
+        <button class="btn btn-primary" onclick="openModal('addApptMod')">➕ Book Appointment</button>
+      </div>
+      <div id="apptList" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- ─── VITALS ─── -->
+    <div class="main" id="sec-vitals">
+      <div class="ph"><h1>❤️ Vitals & Health Monitor</h1><p>Track your key daily measurements</p></div>
+      <div style="display:flex;gap:18px;margin-bottom:20px;flex-wrap:wrap;">
+        <div class="card" style="flex:0 0 190px;text-align:center;">
+          <div class="ch" style="margin-bottom:14px;">Health Score</div>
+          <div style="position:relative;width:130px;height:130px;margin:0 auto 12px;">
+            <svg width="130" height="130" viewBox="0 0 130 130" style="position:absolute;top:0;left:0;transform:rotate(-90deg)">
+              <circle cx="65" cy="65" r="54" fill="none" stroke="var(--gpale)" stroke-width="11"/>
+              <circle cx="65" cy="65" r="54" fill="none" stroke="url(#vsg)" stroke-width="11" stroke-dasharray="339.3" stroke-dashoffset="44" stroke-linecap="round"/>
+              <defs><linearGradient id="vsg" x1="0" y1="0" x2="1" y2="0"><stop offset="0%" stop-color="#0a5c52"/><stop offset="100%" stop-color="#2e86de"/></linearGradient></defs>
+            </svg>
+            <div style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+              <div style="font-size:34px;font-weight:900;color:var(--g2);" id="vitScoreEl">87</div>
+              <div style="font-size:12px;color:var(--t3);">/ 100</div>
+            </div>
+          </div>
+          <div style="font-size:16px;font-weight:700;color:var(--g2);">🏆 Excellent</div>
+        </div>
+        <div style="flex:1;min-width:280px;"><div class="vitals-grid" id="vitGrid"></div></div>
+      </div>
+      <div class="card">
+        <div class="ch">📝 Log Today's Vitals</div>
+        <div class="g2" style="margin-top:15px;">
+          <div class="f-grp"><label class="f-lbl">🩺 Systolic BP</label><input type="number" class="f-inp" id="bpS" placeholder="e.g. 120"></div>
+          <div class="f-grp"><label class="f-lbl">🩺 Diastolic BP</label><input type="number" class="f-inp" id="bpD" placeholder="e.g. 80"></div>
+          <div class="f-grp"><label class="f-lbl">❤️ Heart Rate (bpm)</label><input type="number" class="f-inp" id="hrV" placeholder="e.g. 72"></div>
+          <div class="f-grp"><label class="f-lbl">🩸 Blood Sugar (mg/dL)</label><input type="number" class="f-inp" id="bsV" placeholder="e.g. 120"></div>
+          <div class="f-grp"><label class="f-lbl">⚖️ Weight (lbs)</label><input type="number" class="f-inp" id="wtV" placeholder="e.g. 162"></div>
+          <div class="f-grp"><label class="f-lbl">💨 SpO₂ (%)</label><input type="number" class="f-inp" id="spV" placeholder="e.g. 98"></div>
+        </div>
+        <button class="btn btn-primary btn-lg" onclick="saveVitals()">💾 Save Today's Vitals</button>
+      </div>
+    </div>
+
+    <!-- ─── FOOD DIARY ─── -->
+    <div class="main" id="sec-food-diary">
+      <div class="ph"><h1>🥗 Food & Hydration Diary</h1><p>Track meals and water to support your medications</p></div>
+      <div class="g2" style="margin-bottom:18px;">
+        <div class="card">
+          <div class="ch">🍽️ Today's Meals</div>
+          <div id="mealLog" style="margin-top:13px;"></div>
+          <button class="btn btn-primary" style="margin-top:11px;" onclick="logMeal()">➕ Log a Meal</button>
+        </div>
+        <div class="card">
+          <div class="ch">💧 Water Intake</div>
+          <div style="text-align:center;padding:18px 0;">
+            <div style="font-size:52px;font-weight:900;color:var(--b3);" id="waterNum">5</div>
+            <div style="font-size:15px;color:var(--t3);margin-bottom:14px;">glasses today (goal: 8)</div>
+            <div class="prog" style="margin:0 0 14px;"><div class="prog-f" id="waterProg" style="width:62%;background:linear-gradient(90deg,var(--b2),var(--b3))"></div></div>
+            <button class="btn btn-sky btn-lg" onclick="addWater()">💧 +1 Glass of Water</button>
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="ch">🤖 AI Food Advice for Your Medications</div>
+        <div class="g2" style="margin-top:13px;">
+          <div style="background:var(--redpale);border-radius:12px;padding:14px;border:1px solid #f5b8b8;"><div style="font-size:15px;font-weight:800;color:var(--red);margin-bottom:7px;">🚫 Foods to Avoid</div><div style="font-size:14px;color:var(--t2);line-height:2;">• Grapefruit (with Atorvastatin)<br>• High-salt foods (Lisinopril, Amlodipine)<br>• Alcohol (with Metformin)<br>• Large amounts of potassium-rich foods</div></div>
+          <div style="background:#e8f7ef;border-radius:12px;padding:14px;border:1px solid #a8d8be;"><div style="font-size:15px;font-weight:800;color:#1a7a44;margin-bottom:7px;">✅ Recommended Foods</div><div style="font-size:14px;color:var(--t2);line-height:2;">• Leafy greens & beans<br>• Whole grains (low glycemic)<br>• Berries and apples<br>• Lean protein (chicken, fish)</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── REPORTS ─── -->
+    <div class="main" id="sec-reports">
+      <div class="ph"><h1>📊 Health Reports</h1><p>Monthly summaries to share with your doctor and family</p></div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px;">
+        <div class="card" style="text-align:center;"><div class="report-big">87%</div><div class="report-lbl">Medication Adherence</div></div>
+        <div class="card" style="text-align:center;"><div class="report-big" style="color:var(--b2)">3</div><div class="report-lbl">Appointments Kept</div></div>
+        <div class="card" style="text-align:center;"><div class="report-big" style="color:var(--orange)">2</div><div class="report-lbl">Missed Doses (May)</div></div>
+        <div class="card" style="text-align:center;"><div class="report-big" style="color:var(--g2)">118/76</div><div class="report-lbl">Avg Blood Pressure</div></div>
+      </div>
+      <div class="g2">
+        <div class="card"><div class="ch">📤 Share with Doctor</div><div style="margin-top:14px;"><div class="f-grp"><label class="f-lbl">Report Period</label><select class="f-sel"><option>May 2026</option><option>April 2026</option><option>March 2026</option></select></div><button class="btn btn-primary btn-block btn-lg" onclick="toast('📊','Report Sent','Monthly summary emailed to your doctor.','t-info')">📤 Send to Doctor</button></div></div>
+        <div class="card"><div class="ch">👨‍👩‍👧 Share with Family</div><div style="margin-top:14px;"><div class="f-grp"><label class="f-lbl">Recipients</label><select class="f-sel"><option>All Caregivers</option><option>Primary Contact Only</option></select></div><button class="btn btn-sky btn-block btn-lg" onclick="toast('👨‍👩‍👧','Family Report Sent','Health summary shared with your family.','t-info')">📬 Send to Family</button></div></div>
+      </div>
+    </div>
+
+    <!-- ─── AI ASSISTANT ─── -->
+    <div class="main" id="sec-ai-assistant">
+      <div class="ph"><h1>💬 AI Health Assistant</h1><p>Ask Medi anything — medications, health, appointments, or how you're feeling</p></div>
+      <div class="g2" style="align-items:start;">
+        <div class="chat-wrap">
+          <div class="chat-top">
+            <div class="chat-av">🤖</div>
+            <div>
+              <div class="chat-aname">Medi — Intelligent Health AI</div>
+              <div class="chat-asub"><span class="hdr-ai-dot"></span> Online </div>
+            </div>
+            <button class="btn btn-ghost btn-sm" style="margin-left:auto;background:rgba(255,255,255,.12);color:white;border-color:rgba(255,255,255,.2);" onclick="speakText('Hello! I am Medi, your health assistant. How can I help you today?')">🔊 Speak</button>
+          </div>
+          <div class="chat-msgs" id="chatMsgs">
+            <div class="msg ai">Hello! 👋 I'm <strong>Medi</strong>, your personal AI health companion.<br><br>I can help you with <strong>medications</strong>, <strong>health questions</strong>, <strong>appointments</strong>, and I'll alert your <strong>family</strong> if you need help.<br><br>How are you feeling today?<div class="msg-t">Just now</div></div>
+          </div>
+          <div class="chat-in-row">
+            <button class="voice-btn" id="voiceBtn" onclick="toggleVoice()" title="Voice">🎤</button>
+            <input type="text" class="chat-inp" id="chatInp" placeholder="Type or speak your question..." onkeydown="if(event.key==='Enter')sendMsg()">
+            <button class="btn btn-primary" onclick="sendMsg()">Send ➤</button>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:13px;">
+          <div class="card">
+            <div class="ch">💬 Quick Questions</div>
+            <div style="display:flex;flex-direction:column;gap:7px;margin-top:11px;">
+              <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="askQ('What medications do I need to take today?')">💊 Today's medications?</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="askQ('Is my blood pressure normal?')">🩺 Is my blood pressure normal?</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="askQ('What foods should I avoid with my medications?')">🥗 Foods to avoid?</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="askQ('When is my next doctor appointment?')">📅 Next appointment?</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="askQ('I feel dizzy and unwell, what should I do?')">🤕 I feel dizzy or unwell</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="askQ('Please let my family know I am okay today')">📞 Tell family I am okay</button>
+              <button class="btn btn-ghost" style="justify-content:flex-start;" onclick="askQ('What are the side effects of Metformin?')">💡 Metformin side effects?</button>
+            </div>
+          </div>
+          <div class="card" style="background:linear-gradient(135deg,var(--redpale),#fff);border:1px solid #f5b8b8;">
+            <div class="ch" style="color:var(--red)">🚨 Medical Emergency?</div>
+            <div style="font-size:14px;color:var(--t2);margin:9px 0;">Chest pain, trouble breathing, or feeling very unwell? Do not wait — press SOS immediately.</div>
+            <button class="btn btn-danger btn-lg btn-block" onclick="openSOS()">🆘 EMERGENCY SOS</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── CAREGIVERS ─── -->
+    <div class="main" id="sec-caregivers">
+      <div class="ph"><h1>👨‍👩‍👧 My Care Network</h1><p>Family members and healthcare providers connected to your care</p></div>
+      <div class="ec-strip">
+        <div class="ec-strip-ico">🆘</div>
+        <div class="ec-strip-t"><div class="ec-strip-title">Need help right now?</div><div class="ec-strip-sub">Press SOS to instantly alert all contacts and share your location</div></div>
+        <button class="ec-strip-btn" onclick="openSOS()">🆘 Emergency SOS</button>
+      </div>
+      <div class="cg-grid" id="cgGrid"></div>
+      <div class="card" style="margin-top:18px;">
+        <div class="ch">📤 Message All Caregivers</div>
+        <div class="g2" style="margin-top:13px;">
+          <div><div class="f-grp"><label class="f-lbl">Your message</label><input class="f-inp" id="cgMsg" placeholder="e.g. I am feeling better today, thank you!"></div><button class="btn btn-primary" onclick="sendCGMsg()">📤 Send to All</button></div>
+          <div style="background:var(--gpale);border-radius:14px;padding:15px;"><div style="font-weight:700;color:var(--g2);margin-bottom:8px;font-size:15px;">🤖 Medi auto-alerts your family when:</div><ul style="font-size:14px;color:var(--t2);line-height:2.1;margin-left:15px;"><li>A medication is missed 30+ minutes</li><li>Blood pressure is dangerously high</li><li>You activate the SOS button</li><li>A vital sign goes out of safe range</li><li>You haven't checked in for 24 hours</li></ul></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── REMINDERS ─── -->
+    <div class="main" id="sec-reminders">
+      <div class="ph-row">
+        <div class="ph" style="margin-bottom:0"><h1>🔔 Reminders & Alerts</h1><p>Stay on schedule — Medi will remind you and alert family if missed</p></div>
+        <button class="btn btn-primary" onclick="addRem()">➕ Add Reminder</button>
+      </div>
+      <div id="remList" style="margin-top:20px;"></div>
+    </div>
+
+    <!-- ─── HEALTH TIPS ─── -->
+    <div class="main" id="sec-health-tips">
+      <div class="ph"><h1>🌿 Health Tips for You</h1><p>AI-curated wellness advice for seniors, updated weekly</p></div>
+      <div id="tipsList"></div>
+    </div>
+
+    <!-- ─── PROFILE ─── -->
+    <div class="main" id="sec-profile">
+      <div class="ph"><h1>👤 My Profile</h1><p>Your personal health information</p></div>
+      <div class="g2">
+        <div class="card">
+          <div style="text-align:center;margin-bottom:20px;">
+            <div style="width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,var(--g4),var(--b3));display:flex;align-items:center;justify-content:center;font-size:40px;font-weight:900;color:white;margin:0 auto 12px;" id="profAv">R</div>
+            <div style="font-family:'Playfair Display',serif;font-size:24px;font-weight:700;" id="profName">Robert Hayes</div>
+            <div style="font-size:14px;color:var(--t3);margin-top:3px;" id="profId">ID: MS-0000</div>
+            <div style="background:linear-gradient(90deg,var(--g1),var(--g3));color:white;display:inline-block;padding:4px 16px;border-radius:20px;font-size:13px;font-weight:700;margin-top:8px;">Premium Member</div>
+          </div>
+          <div id="profileInfo" style="display:flex;flex-direction:column;gap:10px;"></div>
+        </div>
+        <div class="card">
+          <div class="ch">✏️ Update Profile</div>
+          <div style="margin-top:14px;">
+            <div class="f-grp"><label class="f-lbl">Full Name</label><input class="f-inp" id="updName" placeholder="Your full name"></div>
+            <div class="f-grp"><label class="f-lbl">Phone Number</label><input class="f-inp" id="updPhone" type="tel" placeholder="Your phone number"></div>
+            <div class="f-grp"><label class="f-lbl">Doctor Name</label><input class="f-inp" id="updDoc" placeholder="Your doctor's name"></div>
+            <div class="f-grp"><label class="f-lbl">Medical Conditions</label><input class="f-inp" id="updCond" placeholder="e.g. Diabetes, Hypertension"></div>
+            <div class="f-grp"><label class="f-lbl">Emergency Contact</label><input class="f-inp" id="updEC" placeholder="Name & phone"></div>
+            <button class="btn btn-primary btn-lg" onclick="saveProfile()">💾 Save Changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ─── SETTINGS ─── -->
+    <div class="main" id="sec-settings">
+      <div class="ph"><h1>⚙️ Settings & Accessibility</h1><p>Customize Mediswift for your comfort</p></div>
+      <div style="max-width:640px;display:flex;flex-direction:column;gap:18px;">
+        <div class="card">
+          <div class="ch">🔠 Text Size</div>
+          <div style="display:flex;gap:9px;margin-top:11px;">
+            <button class="btn btn-ghost" onclick="setFont('17px',this)">Normal</button>
+            <button class="btn btn-primary" onclick="setFont('20px',this)">Large</button>
+            <button class="btn btn-ghost" onclick="setFont('23px',this)">Extra Large</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch">🔔 Notifications</div>
+          <div style="margin-top:12px;">
+            <div class="trow"><div><div class="t-title">Medication Reminders</div><div class="t-desc">Alerts when each dose is due</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="trow"><div><div class="t-title">Voice Alerts</div><div class="t-desc">Medi speaks reminders aloud</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="trow"><div><div class="t-title">Family Alerts on Missed Doses</div><div class="t-desc">Auto-notify emergency contacts</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+            <div class="trow" style="border-bottom:none;"><div><div class="t-title">Doctor Alerts on Abnormal Vitals</div><div class="t-desc">Share dangerous readings with doctor</div></div><div class="toggle on" onclick="this.classList.toggle('on')"></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch">🆘 Emergency Contacts</div>
+          <div style="margin-top:13px;">
+            <div class="f-grp"><label class="f-lbl">Primary Emergency Contact</label><input class="f-inp" id="setEC1" placeholder="Name — Phone Number"></div>
+            <div class="f-grp"><label class="f-lbl">Secondary Emergency Contact</label><input class="f-inp" id="setEC2" placeholder="Name — Phone Number"></div>
+            <div class="f-grp"><label class="f-lbl">Preferred Hospital</label><input class="f-inp" id="setHosp" placeholder="Hospital name"></div>
+            <button class="btn btn-primary btn-lg" onclick="saveSettings()">💾 Save Settings</button>
+          </div>
+        </div>
+        <div class="card">
+          <div class="ch" style="color:var(--red)">⚠️ Account Actions</div>
+          <div style="margin-top:13px;display:flex;gap:10px;flex-wrap:wrap;">
+            <button class="btn btn-ghost" onclick="doLogout()">🚪 Sign Out</button>
+            <button class="btn btn-ghost" style="color:var(--red);border-color:var(--redpale);" onclick="deleteAccount()">🗑️ Delete Account</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- end layout -->
+</div><!-- end appScreen -->
+
+<!-- ═══ MODALS ═══ -->
+<!-- SOS -->
+<div class="overlay" id="sosMod">
+  <div class="modal sos-m">
+    <button class="modal-close" onclick="closeModal('sosMod')">✕</button>
+    <div class="modal-icon" style="animation:alertPop 1s infinite;">🚨</div>
+    <div class="modal-title sos-title">EMERGENCY SOS</div>
+    <div class="modal-desc">Choose who to contact — help is on the way! Stay calm and stay safe.</div>
+    <div class="sos-contacts">
+      <button class="sos-btn s-r" onclick="triggerSOS('911')">🏥 Call Emergency Services — 911</button>
+      <button class="sos-btn s-b" id="sos-ec1-btn" onclick="triggerSOS('ec1')">👨 Call Asrar (Primary)</button>
+      <button class="sos-btn s-b" id="sos-ec2-btn" onclick="triggerSOS('ec2')">👨 Call Asjad (Secondary)</button>
+      <button class="sos-btn s-g" id="sos-doc-btn" onclick="triggerSOS('doctor')">👨‍⚕️ Call My Doctor</button>
+      <button class="sos-btn s-k" onclick="triggerSOS('all')">📢 Alert ALL — Share My Location</button>
+      <button class="btn btn-ghost btn-block" style="margin-top:4px;" onclick="closeModal('sosMod')">✕ Cancel — I'm Okay</button>
+    </div>
+  </div>
+</div>
+
+<!-- ADD MED -->
+<div class="overlay" id="addMedMod">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addMedMod')">✕</button>
+    <div class="modal-icon">💊</div>
+    <div class="modal-title">Add Medication</div>
+    <div class="f-grp"><label class="f-lbl">Medication Name *</label><input class="f-inp" id="mN" placeholder="e.g. Aspirin 81mg"></div>
+    <div class="f-row">
+      <div class="f-grp"><label class="f-lbl">Dose</label><input class="f-inp" id="mD" placeholder="e.g. 1 tablet"></div>
+      <div class="f-grp"><label class="f-lbl">Time</label><input type="time" class="f-inp" id="mT"></div>
+    </div>
+    <div class="f-grp"><label class="f-lbl">Frequency</label><select class="f-sel" id="mF"><option>Once daily</option><option>Twice daily</option><option>Three times daily</option><option>With meals</option><option>Before bed</option><option>As needed</option></select></div>
+    <div class="f-grp"><label class="f-lbl">Instructions</label><input class="f-inp" id="mI" placeholder="e.g. Take with food and water"></div>
+    <button class="btn btn-primary btn-lg btn-block" onclick="saveMed()">✅ Add Medication</button>
+  </div>
+</div>
+
+<!-- ADD APPT -->
+<div class="overlay" id="addApptMod">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('addApptMod')">✕</button>
+    <div class="modal-icon">📅</div>
+    <div class="modal-title">Book Appointment</div>
+    <div class="f-grp"><label class="f-lbl">Doctor Name *</label><input class="f-inp" id="aD" placeholder="e.g. Dr. Sarah Williams"></div>
+    <div class="f-grp"><label class="f-lbl">Specialty</label><select class="f-sel" id="aS"><option>General Physician</option><option>Cardiologist</option><option>Endocrinologist</option><option>Orthopedic</option><option>Neurologist</option><option>Ophthalmologist</option><option>Dermatologist</option></select></div>
+    <div class="f-row">
+      <div class="f-grp"><label class="f-lbl">Date</label><input type="date" class="f-inp" id="aDt"></div>
+      <div class="f-grp"><label class="f-lbl">Time</label><input type="time" class="f-inp" id="aTm"></div>
+    </div>
+    <div class="f-grp"><label class="f-lbl">Reason / Notes</label><input class="f-inp" id="aN" placeholder="e.g. Blood pressure follow-up"></div>
+    <button class="btn btn-primary btn-lg btn-block" onclick="saveAppt()">✅ Book Appointment</button>
+  </div>
+</div>
+<!-- RX CONFIRM MODAL -->
+<div class="overlay" id="rxConfirmMod">
+  <div class="modal" style="max-width:560px;">
+    <button class="modal-close" onclick="closeModal('rxConfirmMod')">✕</button>
+    <div class="modal-icon" style="background:var(--gpale); color:var(--g2);">🤖</div>
+    <div class="modal-title">Confirm Scanned Medications</div>
+    <div class="modal-desc" style="margin-bottom:20px;">Medi AI successfully extracted the following medications. Please review and edit before saving.</div>
+    <div id="rxParsedList" style="max-height:400px; overflow-y:auto; padding-right:8px; margin-bottom:20px;"></div>
+    <div style="display:flex; gap:10px;">
+      <button class="btn btn-ghost" onclick="closeModal('rxConfirmMod')">Cancel</button>
+      <button class="btn btn-primary btn-lg" style="flex:1; justify-content:center;" onclick="saveScannedMeds()">💾 Save to My Medications</button>
+    </div>
+  </div>
+</div>
+<!-- SOS FAB -->
+<button class="sos-fab" onclick="openSOS()" id="sosFab" style="display:none;">
+  <span class="sos-fab-ico">🆘</span><span>SOS</span>
+</button>
+
+<!-- VOICE FAB -->
+<button class="voice-fab" id="voiceFab" onclick="nav('ai-assistant'); setTimeout(toggleVoice, 300)" style="display:none;" title="Talk to Medi">
+  🎤
+</button>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toastWrap"></div>
+
+<!-- ══════════════════════════════════════════
+     JAVASCRIPT ENGINE
+══════════════════════════════════════════ -->
+<script>
+/* ═════════════════════════════════
+   DATABASE (localStorage)
+═════════════════════════════════ */
+const DB={
+  get(k){try{return JSON.parse(localStorage.getItem('msw_'+k));}catch{return null;}},
+  set(k,v){localStorage.setItem('msw_'+k,JSON.stringify(v));},
+  del(k){localStorage.removeItem('msw_'+k);}
+};
+
+/* Generate unique patient ID */
+function genID(){return 'MS-'+Math.floor(1000+Math.random()*9000);}
+
+/* ═════════════════════════════════
+   AUTH
+═════════════════════════════════ */
+let regData={};
+function showAuth(panel){
+  document.querySelectorAll('.auth-panel').forEach(p=>p.classList.remove('active'));
+  document.getElementById(panel).classList.add('active');
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('regErr').style.display='none';
+}
+function showErr(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+function showSuc(id,msg){const el=document.getElementById(id);el.textContent=msg;el.style.display='block';}
+
+function nextStep(n){
+  if(n===2){
+    if(!document.getElementById('rFName').value.trim()||!document.getElementById('rLName').value.trim()||!document.getElementById('rDOB').value){showErr('regErr','Please fill in First Name, Last Name, and Date of Birth.');return;}
+    regData.firstName=document.getElementById('rFName').value.trim();
+    regData.lastName=document.getElementById('rLName').value.trim();
+    regData.dob=document.getElementById('rDOB').value;
+    regData.gender=document.getElementById('rGender').value;
+    regData.phone=document.getElementById('rPhone').value;
+    regData.city=document.getElementById('rCity').value;
+  }
+  if(n===3){
+    regData.doctor=document.getElementById('rDoc').value;
+    regData.conditions=document.getElementById('rCond').value;
+    regData.blood=document.getElementById('rBlood').value;
+    regData.weight=document.getElementById('rWeight').value;
+    regData.ecName=document.getElementById('rECName').value;
+    regData.ecPhone=document.getElementById('rECPhone').value;
+  }
+  document.getElementById('regErr').style.display='none';
+  for(let i=1;i<=3;i++)document.getElementById('regStep'+i).style.display='none';
+  document.getElementById('regStep'+n).style.display='block';
+  document.getElementById('stepNum').textContent=n;
+  const dots=document.querySelectorAll('.step-dot');
+  dots.forEach((d,i)=>{d.className='step-dot';if(i<n-1)d.classList.add('done');else if(i===n-1)d.classList.add('active');});
+}
+
+function doRegister(){
+  const email=document.getElementById('rEmail').value.trim();
+  const pass=document.getElementById('rPass').value;
+  const pass2=document.getElementById('rPass2').value;
+  if(!email){showErr('regErr','Please enter your email address.');return;}
+  if(pass.length<6){showErr('regErr','Password must be at least 6 characters.');return;}
+  if(pass!==pass2){showErr('regErr','Passwords do not match. Please try again.');return;}
+  const users=DB.get('users')||{};
+  if(users[email]){showErr('regErr','An account with this email already exists. Please sign in.');return;}
+  const pid=genID();
+  const user={
+    id:pid,email,password:pass,
+    firstName:regData.firstName||'User',lastName:regData.lastName||'',
+    dob:regData.dob||'',gender:regData.gender||'',phone:regData.phone||'',city:regData.city||'',
+    doctor:regData.doctor||'',conditions:regData.conditions||'',blood:regData.blood||'Unknown',
+    weight:regData.weight||'',ecName:regData.ecName||'',ecPhone:regData.ecPhone||'',
+    hospital:document.getElementById('rHosp').value||'',
+    joinDate:new Date().toLocaleDateString(),
+    meds:[],appts:[],rems:[],notifs:[],meals:[],water:0,
+  };
+  users[email]=user;
+  DB.set('users',users);
+  document.getElementById('regSuc').style.display='none';
+  document.getElementById('regErr').style.display='none';
+  showSuc('regSuc','✅ Account created! Welcome to Mediswift, '+user.firstName+'! Signing you in...');
+  setTimeout(()=>loginUser(user),1200);
+}
+
+function doLogin(){
+  const email=document.getElementById('loginEmail').value.trim();
+  const pass=document.getElementById('loginPass').value;
+  if(!email||!pass){showErr('loginErr','Please enter both email and password.');return;}
+  const users=DB.get('users')||{};
+  const user=users[email];
+  if(!user||user.password!==pass){showErr('loginErr','Email or password is incorrect. Please try again.');return;}
+  loginUser(user);
+}
+
+function demoLogin(){
+  const users=DB.get('users')||{};
+  const demoEmail='demo@mediswift.com';
+  if(!users[demoEmail]){
+    users[demoEmail]={id:'MS-4821',email:demoEmail,password:'demo123',firstName:'Robert',lastName:'Hayes',dob:'1952-03-15',gender:'Male',phone:'(555) 123-4567',city:'New York, NY',doctor:'Dr. Sarah Williams',conditions:'Type 2 Diabetes, Hypertension',blood:'O+',weight:'162',ecName:'Asrar',ecPhone:'+91 6361269830',hospital:"St. Mary's Medical Center",joinDate:'Jan 2025',meds:[],appts:[],rems:[],notifs:[],meals:[],water:5};
+  } else {
+    users[demoEmail].ecName = 'Asrar';
+    users[demoEmail].ecPhone = '+91 6361269830';
+  }
+  DB.set('users',users);
+  loginUser(users[demoEmail]);
+}
+
+function loginUser(user){
+  DB.set('currentUser',user.email);
+  initUserData(user);
+  document.getElementById('authScreen').style.display='none';
+  document.getElementById('appScreen').style.display='block';
+  document.getElementById('sosFab').style.display='flex';
+  const vf=document.getElementById('voiceFab');if(vf)vf.style.display='flex';
+  populateHeader(user);
+  populateSOS(user);
+  nav('dashboard');
+  setTimeout(()=>{
+    toast('✅','Welcome back, '+user.firstName+'!','Your health dashboard is ready.','');
+    speakText('Good '+getGreeting()+', '+user.firstName+'! Welcome back to Mediswift. Your health is in good hands today!');
+  },800);
+  setTimeout(()=>checkMissedMeds(user),3000);
+  setInterval(()=>checkMissedMeds(getCurrentUser()),300000);
+}
+
+function getCurrentUser(){
+  const email=DB.get('currentUser');
+  const users=DB.get('users')||{};
+  return users[email]||null;
+}
+function saveCurrentUser(u){
+  const users=DB.get('users')||{};
+  users[u.email]=u;
+  DB.set('users',users);
+}
+
+function doLogout(){
+  DB.del('currentUser');
+  document.getElementById('appScreen').style.display='none';
+  document.getElementById('sosFab').style.display='none';
+  const vf=document.getElementById('voiceFab');if(vf)vf.style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+  document.getElementById('loginErr').style.display='none';
+  document.getElementById('loginEmail').value='';document.getElementById('loginPass').value='';
+  showAuth('loginPanel');
+}
+
+function deleteAccount(){
+  if(!confirm('Are you sure you want to delete your account? This cannot be undone.'))return;
+  const email=DB.get('currentUser');
+  const users=DB.get('users')||{};
+  delete users[email];DB.set('users',users);
+  doLogout();
+}
+
+function populateHeader(u){
+  document.getElementById('hdrAv').textContent=u.firstName[0];
+  document.getElementById('hdrName').textContent=u.firstName+' '+u.lastName;
+  document.getElementById('hdrId').textContent='ID: '+u.id+' • Age '+calcAge(u.dob);
+  document.getElementById('heroName').textContent='Good '+getGreeting()+', '+u.firstName;
+  document.getElementById('heroSub').textContent="Here's your health summary — you're doing great!";
+}
+function calcAge(dob){if(!dob)return'--';return new Date().getFullYear()-new Date(dob).getFullYear();}
+function getGreeting(){const h=new Date().getHours();return h<12?'Morning':h<17?'Afternoon':'Evening';}
+
+function populateSOS(u){
+  const b1=document.getElementById('sos-ec1-btn');
+  const b2=document.getElementById('sos-ec2-btn');
+  const bd=document.getElementById('sos-doc-btn');
+  if(b1)b1.textContent='👨 Call Asrar — +91 6361269830';
+  if(b2)b2.textContent='👨 Call Asjad — +91 9353780031';
+  if(bd)bd.textContent='👨‍⚕️ Call '+(u.doctor||'My Doctor');
+}
+
+function initUserData(u){
+  if(!u.meds||u.meds.length===0){
+    u.meds=[
+      {id:1,name:'Metformin',dose:'500mg • 1 tablet',time:'08:00',freq:'Twice daily',instr:'Take with breakfast',status:'missed',emoji:'🔵'},
+      {id:2,name:'Amlodipine',dose:'5mg • 1 tablet',time:'19:00',freq:'Once daily',instr:'Take after dinner',status:'pending',emoji:'🟢'},
+      {id:3,name:'Aspirin',dose:'81mg • 1 tablet',time:'08:00',freq:'Once daily',instr:'Take with water',status:'taken',emoji:'🔴'},
+    ];
+  }
+  if(!u.appts||u.appts.length===0){
+    u.appts=[
+      {id:1,doc:'Dr. Sarah Williams',spec:'Cardiologist',day:'15',mon:'MAY',time:'10:30 AM',notes:'Blood pressure follow-up'},
+      {id:2,doc:'Dr. James Park',spec:'Endocrinologist',day:'22',mon:'MAY',time:'2:00 PM',notes:'Diabetes management review'},
+    ];
+  }
+  if(!u.rems||u.rems.length===0){
+    u.rems=[
+      {id:1,time:'08:00 AM',text:'Take Morning Medications',done:false,type:'med'},
+      {id:2,time:'07:00 PM',text:'Take Amlodipine 5mg after dinner',done:false,type:'med'},
+      {id:3,time:'09:00 PM',text:'Take evening medications before bed',done:false,type:'med'},
+      {id:4,time:'10:00 AM',text:'Measure Blood Pressure',done:true,type:'vital'},
+      {id:5,time:'01:00 PM',text:'Drink water — stay hydrated!',done:false,type:'wellness'},
+    ];
+  }
+  if(!u.notifs)u.notifs=[{icon:'✅',msg:'Daily summary sent to family',time:'Yesterday',type:'ok'}];
+  if(!u.meals||u.meals.length===0)u.meals=[{icon:'🥣',name:'Oatmeal with banana',cal:'280 kcal',time:'8:00 AM'}];
+  if(typeof u.water==='undefined')u.water=5;
+  saveCurrentUser(u);
+}
+
+/* ═════════════════════════════════
+   AI MISSED MED CHECKER
+═════════════════════════════════ */
+function checkMissedMeds(u){
+  if(!u)return;
+  const missed=u.meds.filter(m=>m.status==='missed');
+  if(missed.length>0){
+    toast('⚠️',missed[0].name+' is overdue!','Your family has been notified by Medi.','t-err');
+    speakText('Reminder: You still need to take '+missed[0].name+'. Please take it now.');
+    // Log notification
+    u.notifs=u.notifs||[];
+    u.notifs.unshift({icon:'⚠️',msg:missed[0].name+' missed — family notified at '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),time:'Just now',type:'miss'});
+    saveCurrentUser(u);
+    // Build dash alert
+    const da=document.getElementById('dashAlerts');
+    if(da)da.innerHTML=`<div class="ai-al miss"><div class="ai-al-ico">🤖</div><div><div class="ai-al-title">AI Alert: ${missed[0].name} is overdue!</div><div class="ai-al-text">This dose was missed. Your family has been automatically notified by Medi. Please take your dose now if you feel well.</div><div class="ai-al-acts"><button class="btn btn-primary btn-sm" onclick="quickTaken('${missed[0].name}')">✅ Mark as Taken</button><button class="btn btn-ghost btn-sm" onclick="nav('ai-assistant')">💬 Ask Medi</button><button class="btn btn-danger btn-sm" onclick="openSOS()">🆘 Need Help</button></div></div></div>`;
+  } else {
+    const da=document.getElementById('dashAlerts');
+    if(da)da.innerHTML='';
+  }
+}
+
+/* ═════════════════════════════════
+   NAVIGATION
+═════════════════════════════════ */
+function nav(id){
+  document.querySelectorAll('.main').forEach(e=>e.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(e=>e.classList.remove('active'));
+  const sec=document.getElementById('sec-'+id);
+  if(sec)sec.classList.add('active');
+  document.querySelectorAll('.nav-item').forEach(e=>{
+    const oc=e.getAttribute('onclick')||'';
+    if(oc.includes("'"+id+"'"))e.classList.add('active');
+  });
+  renderSec(id);window.scrollTo(0,0);
+}
+function renderSec(id){
+  const map={medications:renderMeds,appointments:renderAppts,caregivers:renderCG,reminders:renderRems,'health-tips':renderTips,'ai-monitor':renderMonitor,'food-diary':renderFood,vitals:renderVitals,profile:renderProfile,settings:loadSettings};
+  if(map[id])map[id]();
+}
+
+/* ═════════════════════════════════
+   CLOCK
+═════════════════════════════════ */
+function tick(){
+  const n=new Date(),h=n.getHours(),m=n.getMinutes(),ap=h>=12?'PM':'AM',hr=h%12||12;
+  const ce=document.getElementById('clockEl');if(ce)ce.textContent=`${hr}:${String(m).padStart(2,'0')} ${ap}`;
+  const de=document.getElementById('dateEl');
+  if(de){const days=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];const mons=['January','February','March','April','May','June','July','August','September','October','November','December'];de.textContent=`${days[n.getDay()]}, ${mons[n.getMonth()]} ${n.getDate()}`;}
+  // countdown
+  const cd=document.getElementById('countdown');if(cd){const mins=60*(19-h)+60-m;cd.textContent=mins>60?Math.floor(mins/60)+'h '+mins%60+'m':mins+'m';}
+}
+setInterval(tick,1000);tick();
+
+/* ═════════════════════════════════
+   MEDICATIONS
+═════════════════════════════════ */
+function renderMeds(){
+  const u=getCurrentUser();if(!u)return;
+  const missed=u.meds.filter(m=>m.status!=='taken').length;
+  const bd=document.getElementById('medBd');if(bd)bd.textContent=missed;
+  const pc=document.getElementById('pendingCount');if(pc)pc.textContent=missed;
+  const sm=document.getElementById('s-meds');if(sm)sm.textContent=u.meds.filter(m=>m.status==='taken').length+'/'+u.meds.length;
+  document.getElementById('medGrid').innerHTML=u.meds.map(m=>`
+    <div class="med-card" style="animation-delay:${Math.random()*.15}s">
+      <div class="med-stripe" style="background:${m.status==='taken'?'#1a7a44':m.status==='missed'?'var(--redm)':'var(--orange)'}"></div>
+      <div class="med-sb ${m.status==='taken'?'ms-taken':m.status==='missed'?'ms-missed':'ms-pending'}">${m.status==='taken'?'✅ Taken':m.status==='missed'?'⚠️ MISSED':'⏳ Pending'}</div>
+      <div class="med-ico">${m.emoji||'💊'}</div>
+      <div class="med-name">${m.name}</div>
+      <div class="med-dose">💊 ${m.dose}</div>
+      <div class="med-dose">📋 ${m.freq}</div>
+      <div class="med-dose" style="font-size:13px;color:var(--t3);margin-top:3px;">📝 ${m.instr}</div>
+      <div class="med-chips" style="margin-top:9px;"><span class="tag tag-b">⏰ ${fmt(m.time)}</span></div>
+      <div class="med-acts">
+        ${m.status!=='taken'?`<button class="btn btn-primary btn-sm" onclick="markMed(${m.id})">✅ Taken</button>`:'<span style="color:#1a7a44;font-weight:700;font-size:14px;">✅ Taken Today</span>'}
+        <button class="btn btn-ghost btn-sm" onclick="delMed(${m.id})">🗑️</button>
+      </div>
+    </div>`).join('');
+}
+function fmt(t){if(!t)return'--';const[h,m]=t.split(':');const hh=parseInt(h),ap=hh>=12?'PM':'AM',hr=hh%12||12;return`${hr}:${m} ${ap}`;}
+function markMed(id){
+  const u=getCurrentUser();const i=u.meds.findIndex(m=>m.id===id);
+  if(i>=0){u.meds[i].status='taken';saveCurrentUser(u);}
+  renderMeds();checkMissedMeds(u);
+  toast('✅',u.meds.find(m=>m.id===id)?.name+' Taken','Great job! Keep up your streak.','');
+  speakText('Well done! Medication marked as taken. You are doing great!');
+}
+function delMed(id){const u=getCurrentUser();u.meds=u.meds.filter(m=>m.id!==id);saveCurrentUser(u);renderMeds();toast('🗑️','Removed','Medication removed from your list.','t-warn');}
+function saveMed(){
+  const name=document.getElementById('mN').value.trim();
+  if(!name){toast('⚠️','Missing Name','Please enter a medication name.','t-err');return;}
+  const u=getCurrentUser();
+  const emojis=['💊','🔵','🟢','🔴','🟠','🟣','🟡'];
+  u.meds.push({id:Date.now(),name,dose:document.getElementById('mD').value||'1 dose',time:document.getElementById('mT').value||'08:00',freq:document.getElementById('mF').value,instr:document.getElementById('mI').value||'Take as directed',status:'pending',emoji:emojis[Math.floor(Math.random()*emojis.length)]});
+  saveCurrentUser(u);closeModal('addMedMod');renderMeds();
+  toast('💊',name+' Added','Now in your medication list.','');
+}
+function quickTaken(name){
+  const u=getCurrentUser();const i=u.meds.findIndex(m=>name.includes(m.name)||m.name===name);
+  if(i>=0){u.meds[i].status='taken';saveCurrentUser(u);}
+  checkMissedMeds(u);renderMeds();
+  toast('✅',name+' Marked Taken','Excellent! You\'re on track today.','');
+  speakText('Well done! '+name+' has been marked as taken. Keep it up!');
+}
+
+/* ═════════════════════════════════
+   APPOINTMENTS
+═════════════════════════════════ */
+function renderAppts(){
+  const u=getCurrentUser();if(!u)return;
+  document.getElementById('apptList').innerHTML=u.appts.length?u.appts.map(a=>`
+    <div class="appt-card" style="animation-delay:${Math.random()*.15}s">
+      <div class="appt-cal"><div class="appt-day">${a.day}</div><div class="appt-mon">${a.mon}</div></div>
+      <div class="appt-inf">
+        <div class="appt-name">${a.doc}</div>
+        <div class="appt-spec">🩺 ${a.spec}</div>
+        <div class="appt-note">📝 ${a.notes}</div>
+        <div class="appt-tc">⏰ ${a.time}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:7px;">
+        <button class="btn btn-sky btn-sm" onclick="toast('📞','Calling…','Connecting to ${a.doc}…','t-info')">📞 Call</button>
+        <button class="btn btn-ghost btn-sm" onclick="delAppt(${a.id})">🗑️</button>
+      </div>
+    </div>`).join(''):'<div style="text-align:center;padding:40px;color:var(--t3);font-size:17px;">No appointments yet. Book one! 📅</div>';
+}
+function saveAppt(){
+  const doc=document.getElementById('aD').value.trim();
+  if(!doc){toast('⚠️','Missing Doctor','Please enter the doctor\'s name.','t-err');return;}
+  const d=new Date(document.getElementById('aDt').value);
+  const mons=['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
+  const u=getCurrentUser();
+  u.appts.push({id:Date.now(),doc,spec:document.getElementById('aS').value,day:d.getDate()||'--',mon:mons[d.getMonth()]||'---',time:fmt(document.getElementById('aTm').value),notes:document.getElementById('aN').value||'General visit'});
+  saveCurrentUser(u);closeModal('addApptMod');renderAppts();
+  toast('📅','Appointment Booked','Visit with '+doc+' has been scheduled.','');
+}
+function delAppt(id){const u=getCurrentUser();u.appts=u.appts.filter(a=>a.id!==id);saveCurrentUser(u);renderAppts();}
+
+/* ═════════════════════════════════
+   VITALS
+═════════════════════════════════ */
+const vitalsStatic=[
+  {emoji:'🩺',val:'118/76',unit:'mmHg',label:'Blood Pressure',s:'ok',sl:'Normal'},
+  {emoji:'❤️',val:'72',unit:'bpm',label:'Heart Rate',s:'ok',sl:'Normal'},
+  {emoji:'🩸',val:'126',unit:'mg/dL',label:'Blood Sugar',s:'warn',sl:'Monitor'},
+  {emoji:'🌡️',val:'98.4',unit:'°F',label:'Temperature',s:'ok',sl:'Normal'},
+  {emoji:'💨',val:'98%',unit:'SpO₂',label:'Oxygen Level',s:'ok',sl:'Normal'},
+  {emoji:'⚖️',val:'162',unit:'lbs',label:'Weight',s:'ok',sl:'Stable'},
+];
+function renderVitals(){
+  document.getElementById('vitGrid').innerHTML=vitalsStatic.map(v=>`
+    <div class="vital-card">
+      <div class="v-emoji">${v.emoji}</div><div class="v-val">${v.val}</div>
+      <div class="v-unit">${v.unit}</div><div class="v-label">${v.label}</div>
+      <div class="v-chip ${v.s}">${v.sl}</div>
+    </div>`).join('');
+}
+function saveVitals(){
+  toast('❤️','Vitals Saved','Your readings have been recorded.','');
+  speakText('Your vitals have been saved. Great job taking care of your health!');
+}
+
+/* ═════════════════════════════════
+   CAREGIVERS
+═════════════════════════════════ */
+function renderCG(){
+  const u=getCurrentUser();if(!u)return;
+  const cgs=[
+    {name:u.ecName||'Asrar',role:'Emergency Contact',phone:u.ecPhone||'+91 6361269830',emoji:'👨',bg:'#fce4ec'},
+    {name:u.doctor||'Your Doctor',role:'Primary Physician',phone:'Contact via clinic',emoji:'👨‍⚕️',bg:'#e3f2fd'},
+    {name:'Asjad',role:'Secondary Contact',phone:'+91 9353780031',emoji:'👨',bg:'#e8f5e9'},
+  ];
+  document.getElementById('cgGrid').innerHTML=cgs.map(c=>`
+    <div class="cg-card">
+      <div class="cg-av" style="background:${c.bg}">${c.emoji}</div>
+      <div class="cg-name">${c.name}</div>
+      <div class="cg-role">${c.role}</div>
+      <div class="cg-phone">📞 ${c.phone}</div>
+      <div class="cg-btns">
+        <button class="btn btn-primary btn-sm" onclick="toast('📞','Calling…','Connecting to ${c.name}…','t-info')">📞 Call</button>
+        <button class="btn btn-sky btn-sm" onclick="toast('💬','Message Sent','Message delivered to ${c.name}.','')">💬 Message</button>
+        <button class="btn btn-danger btn-sm" onclick="openSOS()">🆘 SOS</button>
+      </div>
+    </div>`).join('');
+}
+function sendCGMsg(){
+  const msg=document.getElementById('cgMsg').value.trim();
+  if(!msg){toast('⚠️','Empty Message','Please type a message first.','t-err');return;}
+  const u=getCurrentUser();
+  u.notifs=u.notifs||[];
+  u.notifs.unshift({icon:'📤',msg:'You sent a message to all caregivers: "'+msg+'"',time:'Just now',type:'ok'});
+  saveCurrentUser(u);
+  document.getElementById('cgMsg').value='';
+  toast('📤','Message Sent','Your message was delivered to all caregivers.','');
+}
+
+/* ═════════════════════════════════
+   REMINDERS
+═════════════════════════════════ */
+function renderRems(){
+  const u=getCurrentUser();if(!u)return;
+  const pending=u.rems.filter(r=>!r.done).length;
+  const rb=document.getElementById('remBd');if(rb)rb.textContent=pending;
+  document.getElementById('remList').innerHTML=u.rems.map(r=>`
+    <div class="rem-item">
+      <div class="rem-time">${r.time}</div>
+      <div style="flex:1">
+        <div class="rem-txt ${r.done?'done':''}">${r.text}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:2px;">${r.type==='med'?'💊 Medication':r.type==='vital'?'❤️ Vital Check':'🌿 Wellness'}</div>
+      </div>
+      <div class="rem-chk ${r.done?'done':''}" onclick="toggleRem(${r.id})">${r.done?'✓':''}</div>
+    </div>`).join('');
+}
+function toggleRem(id){
+  const u=getCurrentUser();const i=u.rems.findIndex(r=>r.id===id);
+  u.rems[i].done=!u.rems[i].done;saveCurrentUser(u);renderRems();
+  if(u.rems[i].done){toast('✅','Done!','Reminder completed — well done!','');speakText('Well done! Reminder completed.');}
+}
+function addRem(){
+  const time=prompt('Enter reminder time (e.g. 3:00 PM):');if(!time)return;
+  const text=prompt('What is this reminder for?');if(!text)return;
+  const u=getCurrentUser();
+  u.rems.push({id:Date.now(),time,text,done:false,type:'wellness'});
+  saveCurrentUser(u);renderRems();toast('🔔','Reminder Added','Your new reminder has been saved.','');
+}
+
+/* ═════════════════════════════════
+   MONITOR
+═════════════════════════════════ */
+function renderMonitor(){
+  const u=getCurrentUser();if(!u)return;
+  const missed=u.meds.filter(m=>m.status==='missed');
+  const alerts=document.getElementById('aiMonAlerts');
+  if(missed.length>0){
+    alerts.innerHTML=missed.map(m=>`
+      <div class="ai-al miss">
+        <div class="ai-al-ico">🤖</div>
+        <div><div class="ai-al-title">AI Alert: ${m.name} was not taken</div>
+        <div class="ai-al-text">This dose is overdue. Your emergency contact ${u.ecName||'family member'} has been automatically notified at ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}. Please take your dose now if you feel well.</div>
+        <div class="ai-al-acts"><button class="btn btn-primary btn-sm" onclick="markMed(${m.id});renderMonitor()">✅ Mark Taken</button><button class="btn btn-ghost btn-sm" onclick="nav('ai-assistant')">💬 Ask Medi</button></div></div>
+      </div>`).join('');
+  } else {
+    alerts.innerHTML='<div class="ai-al suc"><div class="ai-al-ico">🎉</div><div><div class="ai-al-title">All medications taken — great job!</div><div class="ai-al-text">No missed doses today. Your family has received a positive health update. Keep up this excellent streak!</div></div></div>';
+  }
+  const aiBd=document.getElementById('aiBd');if(aiBd)aiBd.textContent=missed.length||'✓';
+  const monitors=[
+    {ico:'🔵',text:'Medication Timing',sub:'Tracking all '+u.meds.length+' medications',color:u.meds.filter(m=>m.status==='missed').length?'var(--redpale)':'var(--gpale)',status:'ACTIVE',sc:'var(--g2)'},
+    {ico:'❤️',text:'Vital Sign Trends',sub:'BP, blood sugar, heart rate',color:'var(--bpale)',status:'ACTIVE',sc:'var(--b2)'},
+    {ico:'📅',text:'Appointment Reminders',sub:u.appts.length+' upcoming appointments',color:'#e8f7ef',status:'ACTIVE',sc:'#1a7a44'},
+    {ico:'🚨',text:'Emergency Detection',sub:'SOS ready at all times',color:'var(--redpale)',status:'STANDBY',sc:'var(--red)'},
+  ];
+  document.getElementById('monitorList').innerHTML=monitors.map(m=>`
+    <div style="display:flex;align-items:center;gap:11px;padding:11px;background:${m.color};border-radius:10px;">
+      <span style="font-size:20px;">${m.ico}</span>
+      <div><strong style="font-size:14px;">${m.text}</strong><div style="font-size:12px;color:var(--t3);">${m.sub}</div></div>
+      <span style="margin-left:auto;font-size:12px;font-weight:800;color:${m.sc};">${m.status}</span>
+    </div>`).join('');
+  const notifs=u.notifs||[];
+  document.getElementById('notifLog').innerHTML=notifs.slice(0,5).map(n=>`
+    <div style="display:flex;gap:9px;align-items:flex-start;padding:10px;background:var(--bg);border-radius:9px;">
+      <span style="font-size:18px;">${n.icon}</span>
+      <div style="flex:1"><div style="font-size:13px;font-weight:600;">${n.msg}</div><div style="font-size:12px;color:var(--t3);margin-top:2px;">${n.time}</div></div>
+    </div>`).join('')||'<div style="color:var(--t3);font-size:14px;">No notifications yet.</div>';
+}
+function testNotif(){
+  const u=getCurrentUser();
+  u.notifs=u.notifs||[];
+  u.notifs.unshift({icon:'📤',msg:'Test alert sent to '+( u.ecName||'all caregivers'),time:'Just now',type:'ok'});
+  saveCurrentUser(u);renderMonitor();
+  toast('📤','Test Sent','Test notification delivered to your care network.','t-info');
+}
+
+/* ═════════════════════════════════
+   FOOD DIARY
+═════════════════════════════════ */
+function renderFood(){
+  const u=getCurrentUser();if(!u)return;
+  document.getElementById('mealLog').innerHTML=(u.meals||[]).map(m=>`
+    <div style="display:flex;align-items:center;justify-content:space-between;padding:12px 15px;background:var(--bg);border-radius:var(--r);border:1px solid var(--border);margin-bottom:9px;">
+      <div style="display:flex;align-items:center;gap:9px;"><span style="font-size:22px;">${m.icon}</span><div><div style="font-weight:600;font-size:14px;">${m.name}</div><div style="font-size:12px;color:var(--t3);">${m.time}</div></div></div>
+      <span style="font-size:13px;font-weight:700;color:var(--g2);">${m.cal}</span>
+    </div>`).join('');
+  const wn=document.getElementById('waterNum');const wp=document.getElementById('waterProg');
+  if(wn)wn.textContent=u.water||0;if(wp)wp.style.width=Math.min((u.water||0)/8*100,100)+'%';
+}
+function logMeal(){
+  const name=prompt('What did you eat?');if(!name)return;
+  const u=getCurrentUser();
+  const icons=['🍽️','🥗','🍲','🥙','🍱','🥘','🍛','🥦'];
+  u.meals=u.meals||[];
+  u.meals.push({icon:icons[Math.floor(Math.random()*icons.length)],name,cal:'~250 kcal',time:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})});
+  saveCurrentUser(u);renderFood();toast('🥗','Meal Logged',name+' added to your diary.','');
+}
+function addWater(){
+  const u=getCurrentUser();u.water=(u.water||0)+1;saveCurrentUser(u);renderFood();
+  toast('💧','Water Logged',u.water+' glasses today — keep going!','');
+  if(u.water>=8)speakText('Amazing! You have reached your water goal for today! Excellent work!');
+}
+
+/* ═════════════════════════════════
+   HEALTH TIPS
+═════════════════════════════════ */
+const tipData=[
+  {icon:'🚶',title:'Walk 15 Minutes Daily',text:'A short walk after meals helps control blood sugar and keeps your heart strong. Even slow, gentle walking counts — every step matters.'},
+  {icon:'💧',title:'Drink 8 Glasses of Water',text:'Dehydration causes dizziness and confusion in seniors. Keep a water bottle nearby and sip throughout the day.'},
+  {icon:'🥗',title:'Eat Colorfully',text:'Colorful vegetables and fruits provide vitamins. Low-sodium meals are important if you have high blood pressure.'},
+  {icon:'😴',title:'Sleep 7–8 Hours',text:'Good sleep helps your body heal and your brain stay sharp. Avoid screens 1 hour before bedtime and keep a consistent sleep schedule.'},
+  {icon:'💊',title:'Medication Safety',text:'Take medications at the same time every day. Use a pill organizer. Never skip doses and never take someone else\'s medication.'},
+  {icon:'🧠',title:'Keep Your Mind Active',text:'Puzzles, reading, card games, and socializing all keep your brain healthy and reduce risk of cognitive decline.'},
+  {icon:'🤸',title:'Gentle Stretching',text:'10 minutes of gentle morning stretches improves flexibility, reduces joint pain, and prevents dangerous falls.'},
+  {icon:'👁️',title:'Don\'t Skip Check-ups',text:'Never skip eye exams, hearing tests, or dental visits. Early detection of issues like glaucoma makes treatment much easier.'},
+];
+function renderTips(){
+  document.getElementById('tipsList').innerHTML=tipData.map((t,i)=>`
+    <div style="background:white;border-radius:var(--rl);padding:19px;box-shadow:var(--sh1);border:1px solid var(--border);display:flex;gap:15px;margin-bottom:13px;animation:slideR .4s ease both;animation-delay:${i*.06}s">
+      <div style="font-size:32px;flex-shrink:0;">${t.icon}</div>
+      <div><div style="font-size:16px;font-weight:700;margin-bottom:4px;">${t.title}</div><div style="font-size:14px;color:var(--t2);line-height:1.7;">${t.text}</div></div>
+    </div>`).join('');
+}
+
+/* ═════════════════════════════════
+   PROFILE
+═════════════════════════════════ */
+function renderProfile(){
+  const u=getCurrentUser();if(!u)return;
+  document.getElementById('profAv').textContent=u.firstName[0];
+  document.getElementById('profName').textContent=u.firstName+' '+u.lastName;
+  document.getElementById('profId').textContent='ID: '+u.id+' • Joined: '+(u.joinDate||'N/A');
+  const fields=[
+    {icon:'📅',label:'Date of Birth',val:u.dob||'Not set'},
+    {icon:'⚧',label:'Gender',val:u.gender||'Not set'},
+    {icon:'📞',label:'Phone',val:u.phone||'Not set'},
+    {icon:'📍',label:'City',val:u.city||'Not set'},
+    {icon:'👨‍⚕️',label:'Doctor',val:u.doctor||'Not set'},
+    {icon:'🏥',label:'Hospital',val:u.hospital||'Not set'},
+    {icon:'🩺',label:'Conditions',val:u.conditions||'None listed'},
+    {icon:'🩸',label:'Blood Type',val:u.blood||'Unknown'},
+    {icon:'🆘',label:'Emergency Contact',val:(u.ecName||'Not set')+(u.ecPhone?' — '+u.ecPhone:'')},
+  ];
+  document.getElementById('profileInfo').innerHTML=fields.map(f=>`
+    <div style="display:flex;gap:10px;align-items:flex-start;padding:10px 0;border-bottom:1px solid var(--border);">
+      <span style="font-size:18px;width:24px;flex-shrink:0;">${f.icon}</span>
+      <div><div style="font-size:12px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:1px;">${f.label}</div><div style="font-size:15px;font-weight:600;margin-top:2px;">${f.val}</div></div>
+    </div>`).join('');
+  // Pre-fill edit form
+  document.getElementById('updName').value=u.firstName+' '+u.lastName;
+  document.getElementById('updPhone').value=u.phone||'';
+  document.getElementById('updDoc').value=u.doctor||'';
+  document.getElementById('updCond').value=u.conditions||'';
+  document.getElementById('updEC').value=(u.ecName||'')+(u.ecPhone?' — '+u.ecPhone:'');
+}
+function saveProfile(){
+  const u=getCurrentUser();
+  const name=document.getElementById('updName').value.trim().split(' ');
+  u.firstName=name[0]||u.firstName;u.lastName=name.slice(1).join(' ')||u.lastName;
+  u.phone=document.getElementById('updPhone').value;
+  u.doctor=document.getElementById('updDoc').value;
+  u.conditions=document.getElementById('updCond').value;
+  saveCurrentUser(u);populateHeader(u);renderProfile();
+  toast('✅','Profile Updated','Your information has been saved.','');
+}
+
+/* ═════════════════════════════════
+   SETTINGS
+═════════════════════════════════ */
+function loadSettings(){
+  const u=getCurrentUser();if(!u)return;
+  const e1=document.getElementById('setEC1');const e2=document.getElementById('setEC2');const eh=document.getElementById('setHosp');
+  if(e1)e1.value=u.ecName?(u.ecName+(u.ecPhone?' — '+u.ecPhone:'')):'';
+  if(eh)eh.value=u.hospital||'';
+}
+function saveSettings(){
+  const u=getCurrentUser();
+  const v1=document.getElementById('setEC1').value;
+  u.hospital=document.getElementById('setHosp').value||u.hospital;
+  // parse ec1
+  if(v1.includes('—')){const parts=v1.split('—');u.ecName=parts[0].trim();u.ecPhone=parts[1].trim();}
+  saveCurrentUser(u);populateSOS(u);
+  toast('✅','Settings Saved','Your preferences have been updated.','');
+}
+function setFont(s,b){
+  document.querySelectorAll('.btn').forEach(el=>{if(['Normal','Large','Extra Large'].includes(el.textContent.trim())){el.classList.remove('btn-primary');el.classList.add('btn-ghost');}});
+  b.classList.remove('btn-ghost');b.classList.add('btn-primary');
+  document.body.style.fontSize=s;
+}
+
+/* ═════════════════════════════════
+   SOS
+═════════════════════════════════ */
+function openSOS(){openModal('sosMod');speakText('Emergency SOS activated. Please choose who to contact. Help is on the way.');}
+const sosMsgs={'911':'🚨 Calling 911! Emergency services are on the way. Stay calm and stay on the line.','ec1':'📞 Calling Asrar! He is being alerted via SMS immediately.','ec2':'📞 Calling Asjad! He is being alerted via SMS immediately.','doctor':'📞 Your doctor is being contacted and your health data is being shared.','all':'📢 ALL contacts alerted! Asrar and Asjad have been notified via SMS. Help is coming!'};
+function triggerSOS(type){
+  closeModal('sosMod');
+  const msg=sosMsgs[type]||'SOS sent!';
+  toast('🚨','Emergency Alert Sent',msg,'t-err');
+  speakText(msg);
+  const u=getCurrentUser();
+  u.notifs=u.notifs||[];
+  u.notifs.unshift({icon:'🚨',msg:'SOS triggered — '+(type==='all'?'all contacts':'contact')+' alerted at '+new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}),time:'Just now',type:'sos'});
+  saveCurrentUser(u);
+
+  // Trigger real SMS using native sms: URI scheme
+  let phones = [];
+  if(type === 'ec1') phones.push('+916361269830');
+  if(type === 'ec2') phones.push('+919353780031');
+  if(type === 'all') phones.push('+916361269830', '+919353780031');
+  
+  if(phones.length > 0){
+    const smsMessage = encodeURIComponent("🚨 EMERGENCY SOS! I need help immediately. Please contact me right away! - Sent via Mediswift AI");
+    const sep = navigator.userAgent.match(/iPhone|iPad|iPod/i) ? '&' : '?';
+    window.location.href = `sms:${phones.join(',')}${sep}body=${smsMessage}`;
+  }
+}
+
+/* ═════════════════════════════════
+   AI CHAT
+═════════════════════════════════ */
+const localReplies={
+  'today medications':(u)=>`Today's medications for ${u.firstName}:\n${u.meds.map(m=>`• ${fmt(m.time)}: ${m.name} ${m.dose} — ${m.status==='taken'?'✅ Taken':'⏳ Not yet taken'}`).join('\n')}\n\nRemember: consistency is key to your health!`,
+  'metformin':(u)=>`Metformin is your diabetes medication. Common side effects: nausea, upset stomach — especially when starting. Always take it with food. Your dose: 500mg twice daily with meals. Contact ${u.doctor||'your doctor'} if you have severe stomach pain.`,
+  'blood pressure|bp':(u)=>`Your latest reading: 118/76 mmHg — this is in the normal healthy range (under 120/80). Excellent work! Continue your Amlodipine and Lisinopril as prescribed. Reduce salt and stay active.`,
+  'appointment|doctor':(u)=>`Your next appointment: ${u.appts?.[0]?.doc||'your doctor'} on ${u.appts?.[0]?.mon||'soon'} ${u.appts?.[0]?.day||''} at ${u.appts?.[0]?.time||'--'}. Reason: ${u.appts?.[0]?.notes||'General check-up'}. Would you like a reminder set?`,
+  'dizzy|dizziness|unwell':(u)=>`I'm sorry you're not feeling well, ${u.firstName}. For dizziness: sit or lie down safely, drink a glass of water, and rest. If it doesn't improve in 10 minutes or gets worse — please press the SOS button immediately so I can alert ${u.ecName||'your family'}.`,
+  'headache':(u)=>`For a mild headache: rest in a quiet room, drink water, and apply a cool cloth to your forehead. If it is severe, sudden, or comes with chest pain — please press the SOS button right away. Your safety is the priority.`,
+  'food|eat|avoid':(u)=>'With your medications: 🚫 Avoid grapefruit (Atorvastatin), 🚫 Limit salt (Lisinopril/Amlodipine), 🚫 No alcohol with Metformin. ✅ Eat leafy greens, berries, whole grains, and lean protein.',
+  'fine|well|good':(u)=>`I'm so glad you are doing well, ${u.firstName}! 😊 ${u.ecName||'Your family'} always loves knowing you are safe. Remember to take your medications on time and stay hydrated today. Is there anything health-related I can help you with?`,
+  'family|notify':(u)=>`I have sent a check-in message to ${u.ecName||'your emergency contact'}, letting them know you are okay today. They will receive the update shortly. 💙`,
+  'chest pain|can\'t breathe|breathing':(u)=>`⚠️ ${u.firstName}, this sounds serious. Please press the SOS button IMMEDIATELY to call emergency services. Do not wait. Sit down, stay calm, and get help right now.`,
+  'yes|sure|yeah|please|ok|okay|yep':(u)=>`Great! I've noted that and taken care of it for you. Let me know if there's anything else you need, ${u.firstName}.`,
+  'no|nope|not now':(u)=>`Alright, no problem! I'm here if you need me later.`,
+  'thanks|thank you|appreciate':(u)=>`You're very welcome, ${u.firstName}! It's my pleasure to help you stay healthy.`,
+  'hi|hello|hey|greetings':(u)=>`Hello ${u.firstName}! 👋 I'm Medi. How are you feeling today?`
+};
+async function sendMsg(){
+  const inp=document.getElementById('chatInp');const txt=inp.value.trim();if(!txt)return;
+  appendMsg(txt,'user');inp.value='';
+  const u=getCurrentUser();
+  const lower=txt.toLowerCase();
+  
+  const fallbacks = [
+    `I understand, ${u?.firstName||''}. Based on your health profile, I recommend keeping this in mind for your next visit with ${u?.doctor||'your doctor'}. Would you like me to set a reminder?`,
+    `That makes sense. If you experience any severe symptoms, please don't hesitate to contact ${u?.doctor||'your doctor'}. How are you feeling otherwise?`,
+    `Noted. I'll add this to your health log. Is there anything else on your mind today, ${u?.firstName||''}?`,
+    `I'm here for you! If you ever need immediate help, remember you can press the SOS button to alert ${u?.ecName||'your family'}.`
+  ];
+  let fallback = fallbacks[Math.floor(Math.random() * fallbacks.length)];
+  
+  for(const k of Object.keys(localReplies)){
+    if(k.split('|').some(kk => new RegExp('\\b' + kk + '\\b', 'i').test(lower))){
+      fallback=localReplies[k](u||{});
+      break;
+    }
+  }
+  await callAI(txt,fallback,u);
+}
+async function callAI(userMsg,fallback,u){
+  appendMsg('Medi is thinking…','ai',true);
+  const sys=u?`You are Medi, a warm, professional, patient, and caring AI health assistant for Mediswift — a senior healthcare platform.
+
+PATIENT: ${u.firstName} ${u.lastName}, Age ${calcAge(u.dob)}, ID: ${u.id}
+CONDITIONS: ${u.conditions||'Not specified'}
+MEDICATIONS: ${u.meds?.map(m=>m.name+' '+m.dose).join(', ')||'Not specified'}
+DOCTOR: ${u.doctor||'Not specified'}
+EMERGENCY CONTACT: ${u.ecName||'Not specified'} — ${u.ecPhone||''}
+NEXT APPOINTMENT: ${u.appts?.[0]?.doc||'None'} on ${u.appts?.[0]?.mon||'N/A'} ${u.appts?.[0]?.day||''} at ${u.appts?.[0]?.time||'--'}
+
+GUIDELINES:
+- Speak with warmth, patience, and extreme clarity — the patient may be elderly
+- Keep responses concise and reassuring — no more than 3 short paragraphs
+- For ANY emergency symptoms (chest pain, difficulty breathing, severe dizziness, stroke symptoms) — ALWAYS tell them to press the SOS button immediately
+- If asked to notify family, confirm you have sent the message
+- Never use complex medical jargon without explaining it simply
+- Encourage medication adherence warmly, never make the patient feel guilty
+- For serious medical questions, recommend consulting their doctor while still being helpful
+- Use a first-name basis — call the patient by their name`:'You are Medi, a caring health AI for senior citizens.';
+  try{
+    const res=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,system:sys,messages:[{role:'user',content:userMsg}]})});
+    const data=await res.json();
+    removeThinking();
+    const reply=data.content?.[0]?.text||fallback;
+    appendMsg(reply,'ai');speakText(reply);
+  }catch{removeThinking();appendMsg(fallback,'ai');speakText(fallback);}
+}
+function appendMsg(txt,type,thinking=false){
+  const c=document.getElementById('chatMsgs');
+  const d=document.createElement('div');
+  d.className=`msg ${type}${thinking?' thinking':''}`;
+  d.innerHTML=txt.replace(/\n/g,'<br>')+`<div class="msg-t">${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}</div>`;
+  c.appendChild(d);c.scrollTop=c.scrollHeight;
+}
+function removeThinking(){const t=document.querySelector('.msg.thinking');if(t)t.remove();}
+function askQ(q){document.getElementById('chatInp').value=q;sendMsg();}
+
+/* ═════════════════════════════════
+   VOICE
+═════════════════════════════════ */
+function setMicListening(isListening){
+  const btn=document.getElementById('voiceBtn');
+  const fab=document.getElementById('voiceFab');
+  const inp=document.getElementById('chatInp');
+  if(isListening){
+    if(btn)btn.classList.add('listening');
+    if(fab)fab.classList.add('listening');
+    if(inp)inp.placeholder="Listening... Speak now";
+  }else{
+    if(btn)btn.classList.remove('listening');
+    if(fab)fab.classList.remove('listening');
+    if(inp)inp.placeholder="Type or speak your question...";
+  }
+}
+function toggleVoice(){
+  if(window.SpeechRecognition||window.webkitSpeechRecognition){
+    const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const r=new SR();
+    r.onstart=()=>{
+      setMicListening(true);
+      toast('🎤','Listening...','Please speak your question.','t-info');
+    };
+    r.onresult=e=>{
+      const txt = e.results[0][0].transcript;
+      document.getElementById('chatInp').value=txt;
+      setMicListening(false);
+      sendMsg();
+    };
+    r.onerror=e=>{
+      setMicListening(false);
+      if(e.error==='not-allowed'){
+        toast('🚫','Microphone Blocked','Please allow microphone permissions in your browser settings to use voice features.','t-err');
+      }else{
+        toast('⚠️','Voice Error','Could not understand. Please try again.','t-warn');
+      }
+    };
+    r.onend=()=>setMicListening(false);
+    try { r.start(); } catch(err) { setMicListening(false); }
+  } else {
+    toast('🎤','Voice Unavailable','Your browser does not support voice recognition. Please type your question.','t-warn');
+  }
+}
+function speakText(txt){
+  if(!('speechSynthesis'in window))return;
+  const u=new SpeechSynthesisUtterance(txt.replace(/<[^>]*>/g,''));
+  u.rate=0.85;u.pitch=1.05;u.volume=0.9;
+  window.speechSynthesis.cancel();window.speechSynthesis.speak(u);
+}
+
+/* ═════════════════════════════════
+   TOAST
+═════════════════════════════════ */
+function toast(icon,title,desc,cls){
+  const w=document.getElementById('toastWrap');
+  const t=document.createElement('div');
+  t.className='toast '+(cls||'');
+  t.innerHTML=`<span class="toast-ico">${icon}</span><div><span class="toast-title">${title}</span><span class="toast-desc">${desc}</span></div>`;
+  w.prepend(t);
+  setTimeout(()=>{t.style.opacity='0';t.style.transition='opacity .5s';},4500);
+  setTimeout(()=>t.remove(),5100);
+}
+
+/* ═════════════════════════════════
+   MODALS
+═════════════════════════════════ */
+function openModal(id){document.getElementById(id).classList.add('open');}
+function closeModal(id){document.getElementById(id).classList.remove('open');}
+document.querySelectorAll('.overlay').forEach(o=>o.addEventListener('click',e=>{if(e.target===o)o.classList.remove('open');}));
+
+/* ═════════════════════════════════
+   BOOT — check if logged in
+═════════════════════════════════ */
+(function(){
+  const email=DB.get('currentUser');
+  if(email){
+    const users=DB.get('users')||{};
+    const u=users[email];
+    if(u){loginUser(u);return;}
+  }
+  document.getElementById('authScreen').style.display='flex';
+})();
+/* ═════════════════════════════════
+   AI PRESCRIPTION SCANNER (OCR)
+═════════════════════════════════ */
+let parsedMedications = [];
+
+async function handleRxUpload(input) {
+  const file = input.files[0];
+  if (!file) return;
+
+  const dz = document.getElementById('rxDropzone');
+  const scan = document.getElementById('rxScanning');
+  const progFill = document.getElementById('rxProgFill');
+  const progText = document.getElementById('rxProgText');
+  
+  dz.style.display = 'none';
+  scan.style.display = 'block';
+  progFill.style.width = '5%';
+  progText.textContent = "Initializing OCR Engine...";
+  
+  speakText("Scanning your prescription.");
+
+  try {
+    const worker = await Tesseract.createWorker({
+      logger: m => {
+        if (m.status === 'recognizing text') {
+          const pct = Math.round(m.progress * 100);
+          progFill.style.width = pct + '%';
+          progText.textContent = `Extracting text... ${pct}%`;
+        }
+      }
+    });
+    
+    await worker.loadLanguage('eng');
+    await worker.initialize('eng');
+    const { data: { text } } = await worker.recognize(file);
+    await worker.terminate();
+    
+    progText.textContent = "Analyzing medical data...";
+    progFill.style.width = '100%';
+    
+    setTimeout(() => {
+      parsePrescriptionText(text);
+    }, 800);
+
+  } catch (err) {
+    console.error(err);
+    toast('❌', 'OCR Failed', 'Could not read the image. Please try again.', 't-err');
+    dz.style.display = 'flex';
+    scan.style.display = 'none';
+  }
+}
+
+function parsePrescriptionText(text) {
+  const lines = text.split('\n').filter(l => l.trim().length > 3);
+  parsedMedications = [];
+  
+  // Smart Regex Engine for Medicine extraction
+  // Matches typical medicine name followed by dose (e.g. Lisinopril 10mg, Metformin 500 mg, Aspirin 81mg tablet)
+  const medRegex = /([A-Za-z]+)\s+(\d+(?:\.\d+)?\s*(?:mg|g|ml|mcg|tablets?|capsules?|pills?))/gi;
+  
+  // Timing instructions
+  const timeMap = {
+    'morning': 'Morning', 'am': 'Morning', 'breakfast': 'Morning', 'od': 'Morning',
+    'afternoon': 'Afternoon', 'noon': 'Afternoon', 'lunch': 'Afternoon',
+    'evening': 'Evening', 'dinner': 'Evening',
+    'night': 'Night', 'bed': 'Night', 'pm': 'Night', 'hs': 'Night'
+  };
+  
+  const freqMap = {
+    'twice': 'Twice daily', 'bd': 'Twice daily', 'bid': 'Twice daily', '2 times': 'Twice daily',
+    'thrice': 'Three times daily', 'tds': 'Three times daily', 'tid': 'Three times daily', '3 times': 'Three times daily',
+    'once': 'Once daily', 'daily': 'Once daily', 'qd': 'Once daily'
+  };
+
+  const found = new Set();
+
+  lines.forEach(line => {
+    let match;
+    while ((match = medRegex.exec(line)) !== null) {
+      const name = match[1];
+      const dose = match[2];
+      
+      // Prevent duplicates and false positives
+      if (name.length < 3 || found.has(name.toLowerCase())) continue;
+      found.add(name.toLowerCase());
+      
+      // Parse surrounding context for timings
+      const lowerLine = line.toLowerCase();
+      let timing = 'Morning'; // Default AI prediction
+      for (const [k, v] of Object.entries(timeMap)) { if (lowerLine.includes(k)) timing = v; }
+      
+      let freq = 'Once daily'; // Default
+      for (const [k, v] of Object.entries(freqMap)) { if (lowerLine.includes(k)) freq = v; }
+      
+      let instr = '';
+      if (lowerLine.includes('after food') || lowerLine.includes('pc')) instr = 'Take after food';
+      if (lowerLine.includes('before food') || lowerLine.includes('ac')) instr = 'Take before food';
+
+      parsedMedications.push({ id: genID(), name, dose, freq, time: timing, instructions: instr });
+    }
+  });
+
+  // If OCR fails to find anything structural, add a blank editable one
+  if (parsedMedications.length === 0) {
+    parsedMedications.push({ id: genID(), name: "Unknown Medicine", dose: "1 pill", freq: "Once daily", time: "Morning", instructions: "" });
+  }
+
+  showRxConfirmModal();
+}
+
+function showRxConfirmModal() {
+  document.getElementById('rxDropzone').style.display = 'flex';
+  document.getElementById('rxScanning').style.display = 'none';
+  document.getElementById('rxInput').value = '';
+  
+  renderParsedList();
+  openModal('rxConfirmMod');
+  speakText(`I have extracted ${parsedMedications.length} medication${parsedMedications.length>1?'s':''}. Please review and confirm the details.`);
+}
+
+function renderParsedList() {
+  const container = document.getElementById('rxParsedList');
+  container.innerHTML = parsedMedications.map((m, i) => `
+    <div class="rx-parsed-item" id="rx-item-${i}">
+      <div class="rx-parsed-header">
+        <span>Medication ${i+1}</span>
+        <button class="rx-remove-btn" onclick="removeParsedMed(${i})" title="Remove">✕</button>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:2px;">Medicine Name</div>
+        <input type="text" id="rxName-${i}" value="${m.name}">
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:2px;">Dosage</div>
+        <input type="text" id="rxDose-${i}" value="${m.dose}">
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:2px;">Time of Day</div>
+        <select id="rxTime-${i}">
+          <option ${m.time==='Morning'?'selected':''}>Morning</option>
+          <option ${m.time==='Afternoon'?'selected':''}>Afternoon</option>
+          <option ${m.time==='Evening'?'selected':''}>Evening</option>
+          <option ${m.time==='Night'?'selected':''}>Night</option>
+        </select>
+      </div>
+      <div>
+        <div style="font-size:12px;color:var(--t3);margin-bottom:2px;">Instructions</div>
+        <input type="text" id="rxInstr-${i}" value="${m.instructions}" placeholder="e.g. After food">
+      </div>
+    </div>
+  `).join('');
+}
+
+function removeParsedMed(index) {
+  parsedMedications.splice(index, 1);
+  if (parsedMedications.length === 0) {
+    closeModal('rxConfirmMod');
+    toast('⚠️', 'Cancelled', 'No medications to save.', 't-warn');
+  } else {
+    renderParsedList();
+  }
+}
+
+function saveScannedMeds() {
+  const u = getCurrentUser();
+  if(!u) return;
+
+  // Retrieve values from inputs
+  parsedMedications.forEach((m, i) => {
+    const elName = document.getElementById(`rxName-${i}`);
+    if(elName) {
+      m.name = elName.value.trim() || m.name;
+      m.dose = document.getElementById(`rxDose-${i}`).value.trim();
+      m.time = document.getElementById(`rxTime-${i}`).value;
+      m.instructions = document.getElementById(`rxInstr-${i}`).value.trim();
+      m.history = {}; 
+    }
+  });
+
+  // Save to user object
+  if(!u.meds) u.meds = [];
+  u.meds.push(...parsedMedications);
+  DB.set('users', {...DB.get('users'), [u.email]: u});
+  
+  closeModal('rxConfirmMod');
+  populateMeds(u);
+  if(typeof checkDashboardPending === 'function') checkDashboardPending(u);
+  
+  toast('✅', 'Medications Added', `Successfully added ${parsedMedications.length} medication${parsedMedications.length>1?'s':''} from prescription.`, 't-suc');
+  speakText(`Perfect! I have added ${parsedMedications.length} medication${parsedMedications.length>1?'s':''} to your schedule. I will remind you when it is time to take them.`);
+}
+</script>
+</body>
+</html>
